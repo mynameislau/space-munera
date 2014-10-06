@@ -35,6 +35,11 @@ app.use(bodyParser.urlencoded());
 //app.use(cookieParser());
 //app.get('/users', users.list);
 
+app.get('/', function (req, res)
+{
+	res.render('index.html');
+});
+
 if (env === 'development')
 {
 	app.use(logger('dev'));
