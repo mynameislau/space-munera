@@ -1,0 +1,6 @@
+{
+	"*": {},
+		"space-mirmignon": { "in": "*", "type": "gladiator" },
+		"space-retiaire": { "in": "*", "type": "gladiator" },
+		"space-thrace": { "in": "*", "type": "gladiator" }
+}

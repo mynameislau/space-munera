@@ -1,0 +1,9 @@
+[
+	{"power": 10, "genes": ["regular_hands", "scissor_hands", "hedge_trimmer_hands", "chainsaw_hands"], "mutatable": "true" },
+	{"power": 10, "genes": ["regular_hands", "stone_hands", "rock_hands", "mountain_hands"], "mutatable": "true" },
+	{"power": 10, "genes": ["regular_hands", "postit_hands", "paper_hands", "billboard_hands"], "mutatable": "true" },
+
+	{"power": 10, "genes": ["regular_teeth", "scissor_teeth", "hedge_trimmer_teeth", "chainsaw_teeth"], "mutatable": "true" },
+	{"power": 10, "genes": ["regular_teeth", "stone_teeth", "rock_teeth", "mountain_teeth"], "mutatable": "true" },
+	{"power": 10, "genes": ["regular_teeth", "cotton_teeth", "bus_ticket_teeth", "poster_teeth"], "mutatable": "true" }
+]

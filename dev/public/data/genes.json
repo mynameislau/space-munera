@@ -1,0 +1,32 @@
+{
+	"hands": {
+		"scissor_hands": { "mods": "scissor+1", "grp": "space-mirmignon" },
+		"hedge_trimmer_hands": { "mods": "scissor+3", "grp": "space-mirmignon" },
+		"chainsaw_hands": { "mods": "scissor+5", "grp": "space-mirmignon" },
+
+		"stone_hands": { "mods": "rock+1", "grp": "space-retiaire" },
+		"rock_hands": { "mods": "rock+3", "grp": "space-retiaire" },
+		"mountain_hands": { "mods": "rock+5", "grp": "space-retiaire" },
+
+		"postit_hands": { "mods": "paper+1", "grp": "space-thrace" },
+		"paper_hands": { "mods": "paper+3", "grp": "space-thrace" },
+		"billboard_hands": { "mods": "paper+5", "grp": "space-thrace" },
+
+		"regular_hands": { "grp": "regular-john" }
+	},
+	"jaw": {
+		"scissor_teeth": { "mods": "scissor+1", "grp": "space-mirmignon" },
+		"hedge_trimmer_teeth": { "mods": "scissor+3", "grp": "space-mirmignon" },
+		"chainsaw_teeth": { "mods": "scissor+5", "grp": "space-mirmignon" },
+
+		"stone_teeth": { "mods": "rock+1", "grp": "space-retiaire" },
+		"rock_teeth": { "mods": "rock+3", "grp": "space-retiaire" },
+		"mountain_teeth": { "mods": "rock+5", "grp": "space-retiaire" },
+
+		"cotton_teeth": { "mods": "paper+1", "grp": "space-thrace" },
+		"bus_ticket_teeth": { "mods": "paper+3", "grp": "space-thrace" },
+		"poster_teeth": { "mods": "paper+5", "grp": "space-thrace" },
+
+		"regular_teeth": { "grp": "regular-john" }
+	}
+}
