@@ -309,19 +309,6 @@ var $$ = {};
   },
   JSArray: {
     "^": "Interceptor;",
-    join$1: function(receiver, separator) {
-      var t1, list, i, t2;
-      t1 = receiver.length;
-      list = Array(t1);
-      list.fixed$length = init;
-      for (i = 0; i < receiver.length; ++i) {
-        t2 = H.S(receiver[i]);
-        if (i >= t1)
-          return H.ioore(list, i);
-        list[i] = t2;
-      }
-      return list.join(separator);
-    },
     elementAt$1: function(receiver, index) {
       if (index < 0 || index >= receiver.length)
         return H.ioore(receiver, index);
@@ -799,9 +786,9 @@ var $$ = {};
       }
   },
   ListIterator: {
-    "^": "Object;_iterable,_length,_index,_current",
+    "^": "Object;_iterable,_length,_index,__internal$_current",
     get$current: function() {
-      return this._current;
+      return this.__internal$_current;
     },
     moveNext$0: function() {
       var t1, t2, $length, t3;
@@ -812,10 +799,10 @@ var $$ = {};
         throw H.wrapException(P.ConcurrentModificationError$(t1));
       t3 = this._index;
       if (t3 >= $length) {
-        this._current = null;
+        this.__internal$_current = null;
         return false;
       }
-      this._current = t2.elementAt$1(t1, t3);
+      this.__internal$_current = t2.elementAt$1(t1, t3);
       ++this._index;
       return true;
     }
@@ -1043,9 +1030,9 @@ var $$ = {};
       }}
   },
   _ListQueueIterator: {
-    "^": "Object;_queue,_end,_modificationCount,_position,_collection$_current",
+    "^": "Object;_queue,_end,_modificationCount,_position,_current",
     get$current: function() {
-      return this._collection$_current;
+      return this._current;
     },
     moveNext$0: function() {
       var t1, t2, t3;
@@ -1054,14 +1041,14 @@ var $$ = {};
         H.throwExpression(P.ConcurrentModificationError$(t1));
       t2 = this._position;
       if (t2 === this._end) {
-        this._collection$_current = null;
+        this._current = null;
         return false;
       }
       t1 = t1._table;
       t3 = t1.length;
       if (t2 >= t3)
         return H.ioore(t1, t2);
-      this._collection$_current = t1[t2];
+      this._current = t1[t2];
       this._position = (t2 + 1 & t3 - 1) >>> 0;
       return true;
     }
@@ -1073,7 +1060,8 @@ var $$ = {};
     return H.Primitives_objectToString(object);
   },
   print: function(object) {
-    H.printString(object);
+    var line = H.S(object);
+    H.printString(line);
   },
   bool: {
     "^": "Object;",
@@ -1285,7 +1273,7 @@ var $$ = {};
 ["", "shifumachine.dart", , Y, {
   "^": "",
   main: function() {
-    var pierre, feuille, ciseau, carta, mirmignon, t1, t2, t3, t4, t5, solution, thrace;
+    var pierre, feuille, ciseau, _plan, t1, t2, carta, mirmignon, t3, t4, t5, solution, thrace;
     P.print("Shifumachine Activ\u00e9e");
     pierre = new Y.Symbole(null, null);
     pierre.nom = "pierre";
@@ -1299,28 +1287,26 @@ var $$ = {};
     Y.shifumi(pierre, ciseau);
     Y.shifumi(pierre, feuille);
     Y.shifumi(pierre, pierre);
-    carta = Y.Carte_Carte$txt("______\n______\nxxxxxx\nxxx___\n______");
+    _plan = M.Maze_Maze$parse("____________\n____________\nxxxxx_xxxxxx\nxxx____xxxxx\n____________");
+    t1 = _plan.tiles;
+    t2 = t1.length;
+    if (0 >= t2)
+      return H.ioore(t1, 0);
+    carta = new Y.Carte(t2, t1[0].length, _plan);
     carta.log$0();
     mirmignon = Y.Creature$("mirmignon", ciseau, feuille, carta);
     t1 = mirmignon.carte;
-    if (4 <= t1.largeur - 1)
-      if (4 <= t1.hauteur - 1) {
-        t1 = t1.plan;
-        if (4 >= t1.length)
-          return H.ioore(t1, 4);
-        t1 = t1[4];
-        if (4 >= t1.length)
-          return H.ioore(t1, 4);
-        t1 = J.$eq(t1[4], "X");
-      } else
-        t1 = true;
+    if (4 <= t1.hauteur - 1)
+      t1 = 8 > t1.largeur - 1;
     else
       t1 = true;
-    if (t1)
+    if (t1) {
       P.print("deplacement impossible");
-    else {
-      t1 = mirmignon.carte;
-      t2 = t1.plan;
+      P.print("cible : x: 4 vs " + C.JSInt_methods.toString$0(mirmignon.carte.hauteur) + " y: 8 vs " + C.JSInt_methods.toString$0(mirmignon.carte.largeur));
+    } else {
+      mirmignon.carte.maj$2(mirmignon.x, mirmignon.y);
+      t1 = mirmignon.carte.plan;
+      t2 = t1.tiles;
       t3 = mirmignon.x;
       t4 = t2.length;
       if (t3 >= t4)
@@ -1329,41 +1315,27 @@ var $$ = {};
       t5 = mirmignon.y;
       if (t5 >= t3.length)
         return H.ioore(t3, t5);
-      t3[t5] = "s";
+      t1.start = t3[t5];
       if (4 >= t4)
         return H.ioore(t2, 4);
       t2 = t2[4];
-      if (4 >= t2.length)
-        return H.ioore(t2, 4);
-      t2[4] = "g";
-      solution = M.aStar2D(M.Maze_Maze$parse(t1.log$0()));
-      t1 = mirmignon.carte.plan;
-      t2 = mirmignon.x;
-      t4 = t1.length;
-      if (t2 >= t4)
-        return H.ioore(t1, t2);
-      t2 = t1[t2];
-      t5 = mirmignon.y;
-      if (t5 >= t2.length)
-        return H.ioore(t2, t5);
-      t2[t5] = "_";
-      if (4 >= t4)
-        return H.ioore(t1, 4);
-      t1 = t1[4];
-      if (4 >= t1.length)
-        return H.ioore(t1, 4);
-      t1[4] = "z";
+      if (8 >= t2.length)
+        return H.ioore(t2, 8);
+      t1.goal = t2[8];
+      solution = M.aStar2D(t1);
+      P.print(solution);
       if (solution.get$length(solution) !== 0) {
-        P.print(mirmignon.nom + " se d\u00e9place vers 4, 4");
+        P.print(mirmignon.nom + " se d\u00e9place vers 4, 8");
         mirmignon.x = 4;
-        mirmignon.y = 4;
-        mirmignon.carte.log$0();
+        mirmignon.y = 8;
       } else
         P.print("chemin bloqu\u00e9 !");
+      mirmignon.carte.maj$2(mirmignon.x, mirmignon.y);
+      mirmignon.carte.log$0();
     }
     thrace = Y.Creature$("thrace", pierre, pierre, carta);
-    P.print(thrace.nom + " attaque " + mirmignon.nom);
-    Y.shifumi(thrace.attaque, mirmignon.defense);
+    thrace.attaquer$1(mirmignon);
+    mirmignon.attaquer$1(thrace);
   },
   shifumi: function(_atk, _def) {
     var r = C.JSInt_methods.$mod(_def.valeur - _atk.valeur + 3, 3);
@@ -1383,45 +1355,54 @@ var $$ = {};
     "^": "Object;nom,valeur"
   },
   Creature: {
-    "^": "Object;nom,attaque,defense,x,y,carte",
+    "^": "Object;nom,attaque,defense,alonge,x,y,carte",
+    attaquer$1: function(_cible) {
+      if (P.max(Math.abs(this.x - _cible.x), Math.abs(this.y - _cible.y)) <= this.alonge) {
+        P.print(this.nom + " attaque " + _cible.nom);
+        Y.shifumi(this.attaque, _cible.defense);
+      } else
+        P.print("cible hors port\u00e9e");
+    },
     Creature$4: function(_nom, _atk, _def, _carte) {
       P.print("Cr\u00e9ation de " + _nom + ", attaque : " + _atk.nom + ", defense : " + _def.nom);
       this.nom = _nom;
       this.attaque = _atk;
       this.defense = _def;
       this.carte = _carte;
+      _carte.maj$2(0, 0);
     },
     static: {Creature$: function(_nom, _atk, _def, _carte) {
-        var t1 = new Y.Creature(null, null, null, 0, 0, null);
+        var t1 = new Y.Creature(null, null, null, 1, 0, 0, null);
         t1.Creature$4(_nom, _atk, _def, _carte);
         return t1;
       }}
   },
   Carte: {
     "^": "Object;hauteur,largeur,plan",
+    maj$2: function(_x, _y) {
+      var t1 = this.plan.tiles;
+      if (_x >= t1.length)
+        return H.ioore(t1, _x);
+      t1 = t1[_x];
+      if (_y >= t1.length)
+        return H.ioore(t1, _y);
+      t1 = t1[_y];
+      t1.obstacle = !t1.obstacle;
+    },
     log$0: function() {
-      var t1, r, y;
+      var t1, t2, t3, r, i, t4, t5, j;
       P.print("Carte : ");
-      for (t1 = this.plan, r = "", y = 0; y < t1.length; ++y)
-        r = r + C.JSArray_methods.join$1(t1[y], "") + "\n";
+      for (t1 = this.plan.tiles, t2 = t1.length, t3 = t1[0].length, r = "", i = 0; i < t2; ++i) {
+        for (t4 = t1[i], t5 = t4.length, j = 0; j < t3; ++j) {
+          if (j >= t5)
+            return H.ioore(t4, j);
+          r = t4[j].obstacle ? r + "x" : r + "_";
+        }
+        r += "\n";
+      }
       P.print(r);
       return r;
-    },
-    static: {Carte_Carte$txt: function(_txt) {
-        var _plan, rows, rowNum, t1, row, ligne, colNum;
-        _plan = [];
-        rows = C.JSString_methods.trim$0(_txt).split("\n");
-        for (rowNum = 0; t1 = rows.length, rowNum < t1; ++rowNum) {
-          row = [];
-          ligne = J.trim$0$s(rows[rowNum]).split("");
-          for (colNum = 0; colNum < ligne.length; ++colNum)
-            row.push(ligne[colNum]);
-          _plan.push(row);
-        }
-        if (0 >= t1)
-          return H.ioore(rows, 0);
-        return new Y.Carte(t1, J.get$length$as(rows[0]), _plan);
-      }}
+    }
   }
 },
 1],

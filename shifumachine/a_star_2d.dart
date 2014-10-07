@@ -71,7 +71,7 @@ class Maze {
 
 class Tile {
   final int x, y;
-  final bool obstacle;
+  bool obstacle;
   final int _hashcode;
   final String _str;
   
