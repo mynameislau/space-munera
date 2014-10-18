@@ -1,8 +1,12 @@
 import 'a_star_2d.dart';
 import 'dart:collection';
 import 'dart:math';
+import 'dart:js';
+import 'dart:html';
 
 final nb_symbole = 3;
+Carte carta;
+ButtonElement btn;
 
 /* programme principale */
 void main() {
@@ -24,7 +28,7 @@ void main() {
                    "xxx____xxxxx\n" +
                    "____________";
   
-  Carte carta = new Carte.txt (testmap);
+  carta = new Carte.txt (testmap);
   //Carte carta = new Carte.vide (16,24);
   carta.log();
   
@@ -34,6 +38,9 @@ void main() {
   thrace.attaquer(mirmignon);
   //mirmignon.deplacer(0, 2);
   mirmignon.attaquer(thrace);
+  
+  btn = querySelector('#btn');
+  btn.onClick.listen(carta.draw);
 }
 
 /* classe des symbole, pierre, feuille, ciseau */
@@ -178,5 +185,10 @@ class Carte {
     }
     print(r);
     return r;
+  }
+  
+  void draw(Event e){
+    print('draw !');
+    context.callMethod('drawmap', [log()]);
   }
 }

@@ -8,13 +8,18 @@
     
     <script async type="application/dart" src="shifumachine.dart"></script>
     <script async src="packages/browser/dart.js"></script>
+    <script type="text/javascript" src="easeljs-0.7.1.combined.js"></script>
+    <script type="text/javascript" src="graph.js"></script>
     
     <link rel="stylesheet" href="shifumachine.css">
   </head>
-  <body>
+  <body onload="init()">
     <h1>一二三 ShifumachinE 三二一</h1>
     
-    <p>tout se passe dans la console dude</p>
+    <p>presque tout se passe dans la console dude</p>
+    <button id="btn">DRAW !</button>
+    
+    <canvas id="spacemur" width="800" height="600"></canvas>
 
 
   </body>
