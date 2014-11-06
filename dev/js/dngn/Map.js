@@ -9,6 +9,10 @@ define(['ROT', 'dngn/Cell'],
 			this.cells = {};
 
 			this.invalidate();
+			
+			/*ROT.RNG.setSeed(12345);
+			ROT.DEFAULT_WIDTH = 80;
+			ROT.DEFAULT_HEIGHT = 30;*/
 
 			var digger = new ROT.Map.Digger();
 
@@ -105,7 +109,7 @@ define(['ROT', 'dngn/Cell'],
 
 				var fov = new ROT.FOV.PreciseShadowcasting(lightPasses.bind(this));
 
-				var farestWalkables = [];
+				var farestWalkables = {};
 				var visibleCells = {};
 				fov.compute(cell.getX(), cell.getY(), 10, function (x, y, r, visibility) {
 					/*var xDist = Math.abs(stp.x - x);
@@ -137,7 +141,7 @@ define(['ROT', 'dngn/Cell'],
 							!visibleCells[String(xPos - 1) + ',' + String(yPos + 1)] ||
 							!visibleCells[String(xPos - 1) + ',' + String(yPos + 0)]
 						) {
-							farestWalkables.push(currCell);
+							farestWalkables[key] = currCell;
 						}
 					}
 				}

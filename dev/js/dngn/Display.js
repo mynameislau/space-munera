@@ -47,9 +47,9 @@ define(['ROT'],
 				var color = $map.getCells()[key].lightPasses() ? '#aa0': '#660';
 				this.ROTdisplay.draw(currCell.x, currCell.y, ch, '#fff', color);
 			}
-			for (var i = 0, farestLength = visiData.farestWalkables.length; i < farestLength; i += 1)
+			for (key in visiData.farestWalkables)
 			{
-				var currFarest = visiData.farestWalkables[i];
+				var currFarest = visiData.farestWalkables[key];
 				this.ROTdisplay.draw(currFarest.getX(), currFarest.getY(), 'x', '#fff', '#ff0000');
 			}
 		}
