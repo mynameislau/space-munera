@@ -4,9 +4,13 @@ requirejs.config({
 
 	paths: {
 		'jquery': '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min',
-		'Utils': 'libs/Utils'
+		'Utils': 'libs/Utils',
+		'ROT': 'libs/rot.js/rot'
 	},
 	shim: {
+		'ROT': {
+			exports: 'ROT'
+		},
 		'jquery': {
 			exports: 'jquery'
 		}
@@ -15,6 +19,7 @@ requirejs.config({
 
 require(['jquery',
 	'libs/lite_loader',
+	'dngn/Dungeon',
 	'dna/Creature',
 	'dna/Gene',
 	'dna/GeneBank',
@@ -22,7 +27,7 @@ require(['jquery',
 	'dna/GeneInterpolationBank',
 	'dna/Mutator',
 	'dna/GeneSet'],
-	function (jquery, LiteLoader, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet)
+	function (jquery, LiteLoader, Dungeon, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet)
 	{
 		$(document).ready(function ()
 		{
@@ -31,24 +36,28 @@ require(['jquery',
 			var loaderCompleteHandler = function ()
 			{
 				console.log('loader complete');
-				var tagsBank = new TagsBank(loader.getContent('tags'));
+
+				console.log(Dungeon);
+				var dungeon = Object.create(Dungeon);
+				dungeon.init();
+				
+
+				//MUTANT
+				/*var tagsBank = new TagsBank(loader.getContent('tags'));
 				var geneBank = new GeneBank(tagsBank, loader.getContent('genes'));
 				var geneInterpolationBank = new GeneInterpolationBank(geneBank, loader.getContent('interpolations'));
-
 				var mirmignon = new Creature(new GeneSet(tagsBank, geneBank));
 				mirmignon.createFromObject(loader.getContent('creatures').totor, geneBank);
-
 				console.log(mirmignon.geneSet.getModifiers());
-				
 				var mutator = Object.create(Mutator);
 				mutator.init(geneBank, geneInterpolationBank, tagsBank);
 				mutator.setPower(99999);
-
 				$('#js-mutation').on('click', function ()
 				{
 					mutator.mutateRandom(mirmignon.geneSet);
 					console.log(mirmignon.geneSet.getModifiers());
-				});
+				});*/
+				//
 			};
 			var loaderErrorHandler = function ()
 			{
@@ -63,4 +72,4 @@ require(['jquery',
 			loader.appendJSONLoader({ name : 'creatures', URL : 'data/creatures.json' });
 			loader.load();
 		});
-});
+	});
