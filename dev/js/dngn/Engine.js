@@ -4,14 +4,17 @@ define(['ROT'],
 
 	var Engine =
 	{
-		start: function ($player)
+		init: function () {
+			this._scheduler = new ROT.Scheduler.Simple();
+			this._ROTEngine = new ROT.Engine(this._scheduler);
+		},
+		start: function ()
 		{
-			var scheduler = new ROT.Scheduler.Simple();
-			scheduler.add($player, true);
-			this.ROTEngine = new ROT.Engine(scheduler);
-			this.unlock = this.ROTEngine.unlock.bind(this.ROTEngine);
-			this.lock = this.ROTEngine.lock.bind(this.ROTEngine);
-			this.ROTEngine.start();
+			this._ROTEngine.start();
+		},
+		add: function ($player)
+		{
+			this._scheduler.add($player, true);
 		}
 	};
 

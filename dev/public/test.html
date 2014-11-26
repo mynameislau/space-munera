@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Ananas aus Caracas: rot.js tutorial game</title>
+        <script src="https://ondras.github.io/rot.js/rot.js"></script>
+        <script src="astar.js"></script>
+    </head>
+    <body onload="">
+        <h1>Ananas aus Caracas</h1>
+    </body>
+    <script>
+var Game = {
+    display: null,
+    map: {},
+    testDungeon: [ 
+    			[ 0, 0, 0, 0, 0, 0, 0 ],
+    			[ 0, 1, 1, 1, 1, 1, 0 ],
+    			[ 0, 9, 9, 9, 9, 1, 0 ],
+    			[ 0, 1, 1, 1, 1, 1, 0 ],
+    			[ 0, 1, 9, 9, 9, 9, 0 ],
+    			[ 0, 1, 1, 1, 1, 1, 0 ],
+    			[ 0, 0, 0, 0, 0, 0, 0 ]
+    ],
+    
+    init: function() {
+        this.display = new ROT.Display();
+        document.body.appendChild(this.display.getContainer());
+        
+        this._generateMap();
+    },
+    
+    _generateMap: function() {
+        var digger = new ROT.Map.Digger();
+        var freeCells = [];
+
+        var digCallback = function(x, y, value) {
+            //if (value) { return; }
+            var key = x+","+y;
+            this.map[key] = value;
+            freeCells.push(key);
+        }.bind(this);
+        //digger.create(digCallback.bind(this));
+        
+        for (var x = 0, length = this.testDungeon.length; x < length; x += 1)
+        {
+        	var currRow = this.testDungeon[x];
+        	for (var y = 0, yLength = currRow.length; y < yLength; y += 1)
+        	{
+        		var currCol = currRow[y];
+        		digCallback(x, y, currCol);
+        	}
+        }
+        
+        //this._generateBoxes(freeCells);
+        
+        this._drawWholeMap();
+
+        /* input callback informs about map structure */
+		var passableCallback = function(x, y) {
+		    if (this.map[x+","+y] === 2)
+		    {
+		    	return .000001;
+		    }
+		    if (this.map[x+","+y] === 0)
+		    {
+		    	return 1;
+		    }
+		}.bind(this)
+
+		var graphWithWeight = new Graph(this.testDungeon);
+		var startWithWeight = graphWithWeight.grid[1][1];
+		var endWithWeight = graphWithWeight.grid[5][5];
+		var resultWithWeight = astar.search(graphWithWeight, startWithWeight, endWithWeight);
+		console.log(resultWithWeight);
+
+		for (var m = 0, resultLength = resultWithWeight.length; m < resultLength; m += 1)
+		{
+			var curr = resultWithWeight[m];
+			console.log(curr.x, curr.y);
+			this.display.draw(curr.x, curr.y, curr.weight, "", "red");
+		}
+		
+		//this.display.draw(x, y, "", "", "#800");
+    },
+    
+    _generateBoxes: function(freeCells) {
+        for (var i=0;i<10;i++) {
+            var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
+            var key = freeCells.splice(index, 1)[0];
+            this.map[key] = "*";
+        }
+    },
+    
+    _drawWholeMap: function() {
+        for (var key in this.map) {
+            var parts = key.split(",");
+            var x = parseInt(parts[0]);
+            var y = parseInt(parts[1]);
+            this.display.draw(x, y, this.map[key] ? this.map[key] : "*");
+        }
+    }
+};
+Game.init();
+    </script>
+</html>

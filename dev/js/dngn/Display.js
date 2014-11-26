@@ -4,23 +4,31 @@ define(['ROT'],
 
 	var Display = {
 
-		init: function ()
+		init: function ($map)
 		{
-			this.ROTdisplay = new ROT.Display();
-			document.body.appendChild(this.ROTdisplay.getContainer());
+			this._map = $map;
+			this._map.dispatcher.on('cellChange', this.cellChangeHandler.bind(this));
+			this._ROTDisplay = new ROT.Display();
+			this._cellsToDraw = {};
+			document.body.appendChild(this._ROTDisplay.getContainer());
+		},
+		cellChangeHandler: function ($key)
+		{
+			this._cellsToDraw[$key] = true;
 		},
 		draw: function ($map)
 		{
-			var cells = $map.getCells();
+			var cells = this._cellsToDraw;
 			
 			for (var key in cells)
 			{
+				var currCell = $map.getCell(key);
 				var parts = key.split(',');
 				var x = parseInt(parts[0]);
 				var y = parseInt(parts[1]);
 
 				var toDraw = 0;
-				switch (cells[key].getTerrain())
+				switch (currCell.getTerrain())
 				{
 					case 1:
 						toDraw = ' ';
@@ -32,26 +40,34 @@ define(['ROT'],
 						toDraw = '.';
 						break;
 					default:
-						toDraw = cells[key].getTerrain();
+						toDraw = currCell.getTerrain();
 						break;
 				}
-				this.ROTdisplay.draw(x, y, toDraw);
+				if (currCell.getActors().length >= 1) { toDraw = '@'; }
+				this._ROTDisplay.draw(x, y, toDraw);
 			}
+			this._cellsToDraw = {};
+			//debugger;
 
-			var actorCells = $map.getActorCells();
-			var visiData = $map.getVisibilityData(actorCells[0].getKey());
-			for (key in visiData.visibleCells)
+			/*var actorCells = $map.getActorCells();
+			for (var i = 0, actorsLength = actorCells.length; i < actorsLength; i += 1)
 			{
-				var currCell = visiData.visibleCells[key];
-				var ch = (currCell.r ? '' : '@');
-				var color = $map.getCells()[key].lightPasses() ? '#aa0': '#660';
-				this.ROTdisplay.draw(currCell.x, currCell.y, ch, '#fff', color);
-			}
-			for (key in visiData.farestWalkables)
-			{
-				var currFarest = visiData.farestWalkables[key];
-				this.ROTdisplay.draw(currFarest.getX(), currFarest.getY(), 'x', '#fff', '#ff0000');
-			}
+				var currActorCell = actorCells[i];
+
+				var visiData = $map.getVisibilityData(currActorCell.getKey());
+				for (key in visiData.visibleCells)
+				{
+					var currCell = visiData.visibleCells[key];
+					var ch = (currCell.r ? '' : '@');
+					var color = $map.getCells()[key].lightPasses() ? '#aa0': '#660';
+					this._ROTDisplay.draw(currCell.x, currCell.y, ch, '#fff', color);
+				}
+				for (key in visiData.farestWalkables)
+				{
+					var currFarest = visiData.farestWalkables[key];
+					this._ROTDisplay.draw(currFarest.getX(), currFarest.getY(), 'x', '#fff', '#ff0000');
+				}
+			}*/
 		}
 		
 	};

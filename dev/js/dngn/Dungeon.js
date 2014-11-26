@@ -1,29 +1,37 @@
-define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player'],
-	function (Map, Display, Engine, Player) {
+define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/MainController'],
+	function (Map, Display, Engine, Player, MainController) {
 	'use strict';
 
 	return {
 		init: function ()
 		{
-			this.map = Object.create(Map);
-			this.map.generate();
+			this._map = Object.create(Map);
+			this._map.init();
 
-			this.engine = Object.create(Engine);
-			
-			this.player = Object.create(Player);
-			this.player.init(this.engine, this.map);
-			this.map.placePlayer(this.player);
+			this._engine = Object.create(Engine);
+			this._engine.init();
 
-			this.engine.start(this.player);
+			this._controller = Object.create(MainController);
+			this._controller.init();
 
-			var display = Object.create(Display);
-			display.init();
-			
+			this._display = Object.create(Display);
+			this._display.init(this._map);
+			this._map.generate();
+
+			this.createPlayer();
+
+			this._engine.start();
+		},
+		createPlayer: function ()
+		{
 			var redraw = function () {
-				display.draw(this.map);
+				this._display.draw(this._map);
 			}.bind(this);
 
-			this.player.actCallback = redraw;
+			var player = Object.create(Player);
+			player.init(this._controller, this._map);
+			player.dispatcher.on('actComplete', redraw);
+			this._engine.add(player);
 		}
 	};
 });
