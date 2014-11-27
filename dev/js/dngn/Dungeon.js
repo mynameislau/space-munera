@@ -1,5 +1,5 @@
-define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/MainController'],
-	function (Map, Display, Engine, Player, MainController) {
+define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/SystemsRunner'],
+	function (Map, Display, Engine, Player, SystemsRunner) {
 	'use strict';
 
 	return {
@@ -11,13 +11,13 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/MainCont
 			this._engine = Object.create(Engine);
 			this._engine.init();
 
-			this._controller = Object.create(MainController);
-			this._controller.init();
-
 			this._display = Object.create(Display);
 			this._display.init(this._map);
 			this._map.generate();
 
+			this.createPlayer();
+			this.createPlayer();
+			this.createPlayer();
 			this.createPlayer();
 
 			this._engine.start();
@@ -28,10 +28,15 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/MainCont
 				this._display.draw(this._map);
 			}.bind(this);
 
-			var player = Object.create(Player);
-			player.init(this._controller, this._map);
+			var player = Object.create(Player).init(this._map);
+			this._map.placeActor(player);
 			player.dispatcher.on('actComplete', redraw);
+			player.dispatcher.on('update', function () { this.runSystems(player); }.bind(this));
 			this._engine.add(player);
+		},
+		runSystems: function ($player)
+		{
+			SystemsRunner.run($player);
 		}
 	};
 });

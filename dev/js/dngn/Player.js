@@ -1,29 +1,24 @@
-define(['dngn/Pathfinder', 'dngn/Actor', 'event/Dispatcher'],
-	function (Pathfinder, Actor, Dispatcher) {
+define(['dngn/Pathfinder', 'dngn/Actor', 'event/Dispatcher', 'dngn/AIComponent'],
+	function (Pathfinder, Actor, Dispatcher, AIComponent) {
 	'use strict';
 
 	return {
-		init: function ($controller, $map)
+		init: function ($map)
 		{
-			this._map = $map;
-			this._actor = Object.create(Actor);
-			this._actor.init($map);
-			this._map.placeActor(this._actor);
+			this.mutationComp = { strength: 100, speed: 100 };
+			this.AIComp = Object.create(AIComponent).init();
+			this.mapComp = $map;
+			this.posComp = { cell: undefined };
+			this.fightingComp = { target: undefined };
 			
 			this.dispatcher = Object.create(Dispatcher);
-		},
-		fight: function ()
-		{
 
-		},
-		walkToward: function ()
-		{
-
+			return this;
 		},
 		act: function () {
 			var promise = new Promise(function (resolve, reject)
 			{
-				var best = 0;
+				/*var best = 0;
 				var scores = [];
 				var action = { name: 'explore' };
 
@@ -56,7 +51,7 @@ define(['dngn/Pathfinder', 'dngn/Actor', 'event/Dispatcher'],
 					case 'explore':
 						this._actor.explore();
 						break;
-				}
+				}*/
 
 				//this._actor.explore();
 				this.dispatcher.fire('actComplete');

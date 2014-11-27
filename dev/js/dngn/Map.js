@@ -51,16 +51,26 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 		{
 			this.removeActorFromCell($actor);
 			$cell.addActor($actor);
-			$actor.setCell($cell);
+			$actor.posComp.cell = $cell;
 			this.invalidate($cell.getKey());
 		},
 		removeActorFromCell: function ($actor)
 		{
-			var cell = $actor.getCell();
+			var cell = $actor.posComp.cell;
 			if (!cell) { return; }
 			cell.removeActor($actor);
-			$actor.setCell(undefined);
+			$actor.posComp.cell = undefined;
 			this.invalidate(cell.getKey());
+		},
+
+		getCellFromActor: function ($actor)
+		{
+			for (var i = 0, length = this._cellsArray.length; i < length; i += 1)
+			{
+				var currCell = this._cellsArray[i];
+				var index = currCell.getActors().indexOf($actor);
+				if (index !== -1) { return currCell; }
+			}
 		},
 
 		getCell: function ($key) { return this._cells[$key]; },
@@ -167,7 +177,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 							!visibleCells[String(xPos - 1) + ',' + String(yPos + 1)] ||
 							!visibleCells[String(xPos - 1) + ',' + String(yPos + 0)]
 						) {
-							farestWalkables.push(currCell);
+							farestWalkables.push(currCell.getKey());
 						}
 					}
 				}
