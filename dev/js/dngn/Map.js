@@ -1,5 +1,5 @@
-define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
-	function (ROT, Cell, Dispatcher) {
+define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedData'],
+	function (ROT, Cell, Dispatcher, Graph, CoordinatedData) {
 	'use strict';
 
 	var Map = {
@@ -11,8 +11,8 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 		{
 			this.dispatcher = Object.create(Dispatcher);
 
-			this._cells = {};
-			this._cellsArray = [];
+			this._cells = new CoordinatedData();
+
 			this._invalidCells = [];
 			//this.actorCells = [];
 
@@ -26,18 +26,16 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 			var digger = new ROT.Map.Digger(this._width, this._height);
 
 			var digCallback = function ($x, $y, $terrain) {
-				var currCel = Object.create(Cell);
-				currCel.init($x, $y, $terrain);
-				this._cells[currCel.getKey()] = currCel;
-				this._cellsArray.push(currCel);
-				this.invalidate(currCel.getKey());
+				var currCell = Object.create(Cell);
+				currCell.init($x, $y, $terrain);
+				this._cells.addItem(currCell, $x, $y);
+				this.invalidate(currCell.key);
 			};
 			digger.create(digCallback.bind(this));
 		},
 		invalidate: function ($key)
 		{
 			this._freeCells = undefined;
-			this._cellsVisibleData = {};
 			if ($key !== undefined) { this.dispatcher.fire('cellChange', $key); }
 			//this.actorCells = undefined;
 			//this.actors = undefined;
@@ -52,7 +50,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 			this.removeActorFromCell($actor);
 			$cell.addActor($actor);
 			$actor.posComp.cell = $cell;
-			this.invalidate($cell.getKey());
+			this.invalidate($cell.key);
 		},
 		removeActorFromCell: function ($actor)
 		{
@@ -60,26 +58,26 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 			if (!cell) { return; }
 			cell.removeActor($actor);
 			$actor.posComp.cell = undefined;
-			this.invalidate(cell.getKey());
+			this.invalidate(cell.key);
 		},
 
 		getCellFromActor: function ($actor)
 		{
-			for (var i = 0, length = this._cellsArray.length; i < length; i += 1)
+			for (var i = 0, length = this._cells.array.length; i < length; i += 1)
 			{
-				var currCell = this._cellsArray[i];
+				var currCell = this._cells.array[i];
 				var index = currCell.getActors().indexOf($actor);
 				if (index !== -1) { return currCell; }
 			}
 		},
 
-		getCell: function ($key) { return this._cells[$key]; },
+		getCell: function ($key) { return this._cells.obj[$key]; },
 		
-		getCellFromCoords: function ($x, $y) { return this._cells[$x + ',' + $y]; },
+		getCellFromCoords: function ($x, $y) { return this._cells.getItemFromCoords($x, $y); },
 		
-		getCells: function () { return this._cells; },
+		getCells: function () { return this._cells.obj; },
 
-		getCellsArray: function () { return this._cellsArray; },
+		getCellsArray: function () { return this._cells.array; },
 
 		//getActorCells: function () { return this.actorCells; },
 
@@ -88,9 +86,9 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 			if (!this._freeCells)
 			{
 				this._freeCells = [];
-				for (var i = 0, cellsLength = this._cellsArray.length; i < cellsLength; i += 1)
+				for (var i = 0, cellsLength = this._cells.array.length; i < cellsLength; i += 1)
 				{
-					var currCell = this._cellsArray[i];
+					var currCell = this._cells.array[i];
 					if (currCell.isWalkable())
 					{
 						this._freeCells.push(currCell);
@@ -101,90 +99,79 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher'],
 		},
 		getDist: function ($cell1, $cell2)
 		{
-			var xDist = Math.abs($cell1.getX() - $cell2.getX());
-			var yDist = Math.abs($cell1.getY() - $cell2.getY());
+			var xDist = Math.abs($cell1.x - $cell2.x);
+			var yDist = Math.abs($cell1.y - $cell2.y);
 			return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
 		},
-		getNeighbors: function ($key)
+		getNeighbours: function ($cell)
 		{
-			var neighbors = [];
-			var cell = this._cells[$key];
-			var xPos = cell.getX();
-			var yPos = cell.getY();
-			var toPush;
-			var condPush = function ($x, $y) {
-				var toPush = this._cells[$x + ',' + $y];
-				if (toPush) { neighbors.push(toPush); }
-			};
-			condPush(xPos - 1, yPos - 1);
-			condPush(xPos + 0, yPos - 1);
-			condPush(xPos + 1, yPos - 1);
-			condPush(xPos + 1, yPos + 0);
-			condPush(xPos + 1, yPos + 1);
-			condPush(xPos + 0, yPos + 1);
-			condPush(xPos - 1, yPos + 1);
-			condPush(xPos - 1, yPos + 0);
-			return neighbors;
+			return this._cells.graph.getNeighbours($cell.x, $cell.y);
 		},
-		getVisibilityData: function ($key)
+		getDijkstraMap: function ($array, $goals)
 		{
-			var data = this._cellsVisibleData[$key];
-			if (!data)
+			var coordData = new CoordinatedData();
+			var dijArray = coordData.array;
+			var dijGraph = coordData.graph;
+
+			for (var i = 0, length = $array.length; i < length; i += 1)
 			{
-				var cell = this._cells[$key];
-				/* input callback */
-				var cells = this._cells;
-				var lightPasses = function (x, y) {
-					var cell = this.getCellFromCoords(x, y);
-					return cell ? cell.lightPasses() : false;
-				};
-
-				var fov = new ROT.FOV.PreciseShadowcasting(lightPasses.bind(this));
-
-				var farestWalkables = [];
-				var visibleCells = {};
-				fov.compute(cell.getX(), cell.getY(), 10, function (x, y, r, visibility) {
-					/*var xDist = Math.abs(stp.x - x);
-					var yDist = Math.abs(stp.y - y);
-					var hyp = Math.sqrt(Math.pow(xDist, 2), Math.pow(yDist, 2));*/
-					if (x < 0 || x > this._width - 1 || y < 0 || y > this._height - 1) { return; }
-					visibleCells[x + ',' + y] = ({ x: x, y: y, r: r, visibility: visibility });
-					//var currCell = this.getCellFromCoords(x, y);
-					// if (currCell.isWalkable())
-					// {
-					// 	farestWalkable = currCell;
-					// }
-				}.bind(this));
-				for (var key in visibleCells)
+				var currCell = $array[i];
+				if (currCell.isWalkable())
 				{
-					var currVisiData = visibleCells[key];
-					var currCell = this._cells[key];
-					if (!currCell) { console.log(key, currCell, this._cells); }
-					if (currCell.isWalkable())
+					var dij = { cell: currCell, x: currCell.x, y: currCell.y, value: $goals.indexOf(currCell) !== -1 ? 0 : Infinity };
+					coordData.addItem(dij, dij.x, dij.y);
+				}
+			}
+			var dijArrayLength = dijArray.length;
+			var changes;
+			do
+			{
+				changes = 0;
+				i = 0;
+				for (i; i < dijArrayLength; i += 1)
+				{
+					var currDij = dijArray[i];
+					var neighbours = dijGraph.getNeighbours(currDij.x, currDij.y);
+
+					for (var k = 0, neighLength = neighbours.length; k < neighLength; k += 1)
 					{
-						var xPos = currCell.getX();
-						var yPos = currCell.getY();
-
-						if (key === $key) { continue; }
-
-						//pas beau !!!!!
-						if (!visibleCells[String(xPos - 1) + ',' + String(yPos - 1)] ||
-							!visibleCells[String(xPos + 0) + ',' + String(yPos - 1)] ||
-							!visibleCells[String(xPos + 1) + ',' + String(yPos - 1)] ||
-							!visibleCells[String(xPos + 1) + ',' + String(yPos + 0)] ||
-							!visibleCells[String(xPos + 1) + ',' + String(yPos + 1)] ||
-							!visibleCells[String(xPos + 0) + ',' + String(yPos + 1)] ||
-							!visibleCells[String(xPos - 1) + ',' + String(yPos + 1)] ||
-							!visibleCells[String(xPos - 1) + ',' + String(yPos + 0)]
-						) {
-							farestWalkables.push(currCell.getKey());
+						var currNeighbour = neighbours[k];
+						if (currDij.value > currNeighbour.value + 1)
+						{
+							changes += 1;
+							currDij.value = currNeighbour.value + 1;
 						}
 					}
 				}
-				data = this._cellsVisibleData[$key] = { visibleCells: visibleCells, farestWalkables: farestWalkables };
 			}
+			while (changes > 0);
+			return coordData;
+		},
+		getVisibilityData: function ($cell)
+		{
+			var lightPasses = function (x, y) {
+				var cell = this.getCellFromCoords(x, y);
+				return cell ? cell.lightPasses() : false;
+			};
 
-			return data;
+			var fov = new ROT.FOV.PreciseShadowcasting(lightPasses.bind(this));
+
+			var visibleCells = [];
+			fov.compute($cell.x, $cell.y, 10, function (x, y, r, visibility) {
+				/*var xDist = Math.abs(stp.x - x);
+				var yDist = Math.abs(stp.y - y);
+				var hyp = Math.sqrt(Math.pow(xDist, 2), Math.pow(yDist, 2));*/
+				var cell = this.getCellFromCoords(x, y);
+				if (!cell) { return; }
+				visibleCells.push({ cell: cell, r: r, visibility: visibility });
+				//var currCell = this.getCellFromCoords(x, y);
+				// if (currCell.isWalkable())
+				// {
+				// 	farestWalkable = currCell;
+				// }
+			}.bind(this));
+			
+			return visibleCells;
 		}
 		
 	};

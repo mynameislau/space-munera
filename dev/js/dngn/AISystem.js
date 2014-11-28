@@ -4,72 +4,72 @@ define([],
 
 	return function ($entity)
 	{
+		var AIComp = $entity.AIComp;
 		var map = $entity.mapComp;
-		var actorCell = $entity.posComp.cell;
-		var lastFarest = $entity.AIComp.lastFarest;
-		var history = $entity.AIComp.history;
-		//console.log(history);
-
-		//this.lastCell = undefined;
-
-		var visibilityData = map.getVisibilityData(actorCell.getKey());
-		var farestWalkables = visibilityData.farestWalkables;
-		var visibleCells = visibilityData.visibleCells;
+		var oldData = AIComp.getHistory().concat();
+		var oldDestination = AIComp.destination;
+		var selfCell = $entity.posComp.cell;
+		var newCellScores = [];
+		var visibilityData = map.getVisibilityData($entity.posComp.cell);
 		
-		var key;
-		for (var i = 0, length = map.getCellsArray().length; i < length; i += 1)
+		for (var i = 0, length = visibilityData.length; i < length; i += 1)
 		{
-			var currCell = map.getCellsArray()[i];
-			key = currCell.getKey();
-			var cellHistory = history[key];
-			var visible = visibleCells[key];
-			var farest = farestWalkables[farestWalkables.indexOf(key)];
-
-			if (!cellHistory && farest)
-			{
-				history[key] = Infinity;
-			}
-			else if (visible && !farest)
-			{
-				history[key] = 1;
-			}
-			else if (cellHistory)
-			{
-				history[key] += 1;
-			}
+			var currVisi = visibilityData[i];
+			var key = currVisi.cell.key;
+			AIComp.addHistoryItem({ key: key, age: 0 });
+			//if (!AIComp.getHistoryItem(key)) { AIComp.addItem({key: key}); }
 		}
-		
-		var destination;
-		var best;
-		
+		var isEdge = function ($cell)
+		{
+			//console.log('lightPasses', $cell.lightPasses());
+			if ($cell.lightPasses())
+			{
+				var neighbours = map.getNeighbours($cell);
+				//console.log('neighbours', neighbours);
+				for (var i = 0, length = neighbours.length; i < length; i += 1)
+				{
+					var currNeighbour = neighbours[i];
+					//console.log('exist', AIComp.getHistoryItem(currNeighbour.key), AIComp.getHistoryItem(currNeighbour.key) === undefined);
+					if (AIComp.getHistoryItem(currNeighbour.key) === undefined) { return true; }
+				}
+			}
+		};
+		var edges = [];
 		i = 0;
-		length = farestWalkables.length;
-		for (i = 0; i < length; i += 1)
+		var history = AIComp.getHistory();
+		length = history.length;
+		var historyCells = [];
+		for (i; i < length; i += 1)
 		{
-			key = farestWalkables[i];
-			var farestCell = map.getCell(key);
-			
-			//calcul bien foireux
-			var lastGoalDist = lastFarest ? map.getDist(farestCell, lastFarest) * 10 : 0;
-			var distToGoal = map.getDist(actorCell, farestCell) * 10;
-			var hist = history[key] * 10;
-			var score = distToGoal + hist - lastGoalDist;
-			
-			/* n'aime pas revenir sur ses pas...
-			path = Pathfinder.compute(map, actorCell, currFarest);
-			// if (this.lastCell) { console.log(path[1].getKey(), this.lastCell.getKey(), path[1] === this.lastCell); }
-			if (path[1] === this.lastCell) { score *= 0.4; }*/
 
-			if (score > best || !best)
-			{
-				best = score;
-				destination = farestCell;
-			}
+			var currItem = history[i];
+			var currCell = map.getCell(currItem.key);
+			historyCells.push(currCell);
+			var cellIsEdge = isEdge(currCell);
+			if (cellIsEdge) { edges.push(currCell); }
+			//console.log('isEdge', cellIsEdge);
 		}
-		//debugger;
-		lastFarest = destination;
-		$entity.AIComp.destination = destination;
+		var dijkstraMap = map.getDijkstraMap(historyCells, edges);
+		var lowest;
+		i = 0;
+		var neigh = dijkstraMap.getNeighbours($entity.posComp.cell.x, $entity.posComp.cell.y);
+		length = neigh.length;
+		for (i; i < length; i += 1)
+		{
+			lowest = (!lowest || lowest.value > neigh[i].value) ? neigh[i] : lowest;
+		}
+		$entity.AIComp.destination = lowest.cell;
 
-		$entity.AIComp.setState({ name: 'explore' });
+		AIComp.degueu = dijkstraMap;
+		AIComp.edges = edges;
+		
+		////////////////////////
+
+		
+
+		//$entity.AIComp.destination = map.getCell(highest.key);
+		// console.log($entity.AIComp.destination);
+		//AIComp.history = newData;
+		$entity.AIComp.setState({ name: 'nothing' });
 	};
 });

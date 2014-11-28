@@ -15,28 +15,24 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/SystemsR
 			this._display.init(this._map);
 			this._map.generate();
 
-			this.createPlayer();
-			this.createPlayer();
-			this.createPlayer();
+			this._players = [];
+
 			this.createPlayer();
 
 			this._engine.start();
 		},
 		createPlayer: function ()
 		{
-			var redraw = function () {
-				this._display.draw(this._map);
-			}.bind(this);
-
 			var player = Object.create(Player).init(this._map);
 			this._map.placeActor(player);
-			player.dispatcher.on('actComplete', redraw);
+			this._players.push(player);
 			player.dispatcher.on('update', function () { this.runSystems(player); }.bind(this));
 			this._engine.add(player);
 		},
 		runSystems: function ($player)
 		{
 			SystemsRunner.run($player);
+			this._display.draw(this._map, this._players);
 		}
 	};
 });

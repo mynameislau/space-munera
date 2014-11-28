@@ -9,7 +9,7 @@ define(['dngn/Pathfinder'],
 		},
 		getVisibilityData: function ()
 		{
-			return this._map.getVisibilityData(this._cell.getKey());
+			return this._map.getVisibilityData(this._cell.key);
 		},
 		getDist: function ($cell)
 		{
@@ -29,7 +29,7 @@ define(['dngn/Pathfinder'],
 			for (var i = 0, length = this._map.getCellsArray().length; i < length; i += 1)
 			{
 				var currCell = this._map.getCellsArray()[i];
-				key = currCell.getKey();
+				key = currCell.key;
 				var history = this._history[key];
 				var visible = visibleCells[key];
 				var farest = farestWalkables[key];
@@ -56,7 +56,7 @@ define(['dngn/Pathfinder'],
 			for (i = 0; i < length; i += 1)
 			{
 				var currFarest = farestWalkables[i];
-				key = currFarest.getKey();
+				key = currFarest.key;
 				
 				//calcul bien foireux
 				var lastGoalDist = this._lastFarest ? this._map.getDist(currFarest, this._lastFarest) * 10 : 0;
@@ -66,7 +66,7 @@ define(['dngn/Pathfinder'],
 				
 				/* n'aime pas revenir sur ses pas...
 				path = Pathfinder.compute(this._map, this._cell, currFarest);
-				// if (this.lastCell) { console.log(path[1].getKey(), this.lastCell.getKey(), path[1] === this.lastCell); }
+				// if (this.lastCell) { console.log(path[1].key, this.lastCell.key, path[1] === this.lastCell); }
 				if (path[1] === this.lastCell) { score *= 0.4; }*/
 
 				if (score > best || !best)

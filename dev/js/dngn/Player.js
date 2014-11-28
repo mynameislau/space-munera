@@ -58,7 +58,7 @@ define(['dngn/Pathfinder', 'dngn/Actor', 'event/Dispatcher', 'dngn/AIComponent']
 
 				this.dispatcher.fire('update');
 				
-				setTimeout(function () { resolve('ok !'); }, 100);
+				setTimeout(function () { resolve('ok !'); }, 1);
 
 			}.bind(this));
 			promise.then(function ($result) {
