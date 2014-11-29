@@ -33,8 +33,7 @@ define(function (require)
 			});
 		};
 	};
-
-	LiteLoader.prototype.appendXMLLoader = function ($params)
+	LiteLoader.prototype.appendStringLoader = function ($params)
 	{
 		var loader = new LiteLoader($params);
 		this.loadersArray.push(loader);

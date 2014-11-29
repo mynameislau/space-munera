@@ -39,7 +39,7 @@ require(['jquery',
 
 				console.log(Dungeon);
 				var dungeon = Object.create(Dungeon);
-				dungeon.init();
+				dungeon.init(loader.getContent('map'));
 				
 
 				//MUTANT
@@ -70,6 +70,7 @@ require(['jquery',
 			loader.appendJSONLoader({ name : 'genes', URL : 'data/genes.json' });
 			loader.appendJSONLoader({ name : 'interpolations', URL : 'data/interpolations.json' });
 			loader.appendJSONLoader({ name : 'creatures', URL : 'data/creatures.json' });
+			loader.appendStringLoader({ name : 'map', URL : 'data/map1.dmap' });
 			loader.load();
 		});
 	});

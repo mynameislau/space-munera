@@ -3,7 +3,7 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/SystemsR
 	'use strict';
 
 	return {
-		init: function ()
+		init: function ($mapString)
 		{
 			this._map = Object.create(Map);
 			this._map.init();
@@ -13,7 +13,7 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Player', 'dngn/SystemsR
 
 			this._display = Object.create(Display);
 			this._display.init(this._map);
-			this._map.generate();
+			this._map.generate($mapString);
 
 			this._players = [];
 

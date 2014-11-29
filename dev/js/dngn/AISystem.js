@@ -61,7 +61,6 @@ define([],
 		$entity.AIComp.destination = lowest.cell;
 
 		AIComp.degueu = dijkstraMap;
-		AIComp.edges = edges;
 		
 		////////////////////////
 

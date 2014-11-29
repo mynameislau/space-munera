@@ -18,20 +18,37 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 
 			this.invalidate();
 		},
-		generate: function ()
+		generate: function ($mapString)
 		{
-			/*ROT.RNG.setSeed(12345);
-			ROT.DEFAULT_WIDTH = 80;
-			ROT.DEFAULT_HEIGHT = 30;*/
-			var digger = new ROT.Map.Digger(this._width, this._height);
-
-			var digCallback = function ($x, $y, $terrain) {
+			var initCell = function ($x, $y, $terrain)
+			{
 				var currCell = Object.create(Cell);
 				currCell.init($x, $y, $terrain);
 				this._cells.addItem(currCell, $x, $y);
 				this.invalidate(currCell.key);
 			};
-			digger.create(digCallback.bind(this));
+			if ($mapString)
+			{
+				console.log($mapString.length);
+				$mapString = $mapString.replace(/(\r\n|\n|\r)/gm, '');
+				console.log($mapString.length);
+				for (var i = 0, mapLength = $mapString.length; i < mapLength; i += 1)
+				{
+					var currValue = $mapString[i];
+					currValue = currValue === ' ' ? 0 : currValue;
+					currValue = currValue === '0' ? 1 : currValue;
+					console.log($mapString.charCodeAt(i));
+					initCell.call(this, i % this._width, Math.floor(i / this._width), currValue);
+				}
+			}
+			else
+			{
+				/*ROT.RNG.setSeed(12345);
+				ROT.DEFAULT_WIDTH = 80;
+				ROT.DEFAULT_HEIGHT = 30;*/
+				var digger = new ROT.Map.Digger(this._width, this._height);
+				digger.create(initCell.bind(this));
+			}
 		},
 		invalidate: function ($key)
 		{

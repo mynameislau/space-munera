@@ -10,6 +10,7 @@ define([],
 			this.key = String($x) + ',' + String($y);
 			this._terrain = $terrain;
 			this._actors = [];
+			//console.log('creating', $x, $y, $terrain);
 		},
 		getActors: function () { return this._actors; },
 		addActor: function ($actor) { this._actors.push($actor); },
