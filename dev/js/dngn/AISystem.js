@@ -58,11 +58,33 @@ define([],
 		{
 			lowest = (!lowest || lowest.value > neigh[i].value) ? neigh[i] : lowest;
 		}
+		
+		AIComp.degueu = dijkstraMap;
 		$entity.AIComp.destination = lowest.cell;
 
-		AIComp.degueu = dijkstraMap;
+		/// test desirs
 		
-		////////////////////////
+		var foodDijkstra = map.getDijkstraMap(map.getCellsArray(), map.getCellsFromTerrain('F'));
+		var waterDijkstra = map.getDijkstraMap(map.getCellsArray(), map.getCellsFromTerrain('W'));
+		i = 0;
+		length = foodDijkstra.array.length;
+		for (i; i < length; i += 1)
+		{
+			var foodDij = foodDijkstra.array[i];
+			var waterDij = waterDijkstra.array[i];
+			foodDij.value = Math.min(foodDij.value, waterDij.value);
+		}
+		i = 0;
+		lowest = undefined;
+		neigh = foodDijkstra.getNeighbours($entity.posComp.cell.x, $entity.posComp.cell.y);
+		length = neigh.length;
+		for (i; i < length; i += 1)
+		{
+			lowest = (!lowest || lowest.value > neigh[i].value) ? neigh[i] : lowest;
+		}
+		AIComp.degueu = foodDijkstra;
+		$entity.AIComp.destination = lowest.cell;
+		/// fin testDesirs
 
 		
 

@@ -86,11 +86,11 @@ define(['ROT'],
 				}
 				else
 				{
-					this._ROTDisplay.draw(currDijk.x, currDijk.y, ' ', 'white', 'hsl(120, 0%, ' + (100 - currDijk.value) + '%)');
+					if (currDijk.value < 10) { this._ROTDisplay.draw(currDijk.x, currDijk.y, currDijk.value, 'white', 'black'); }
+					//this._ROTDisplay.draw(currDijk.x, currDijk.y, ' ', 'white', 'hsl(120, 0%, ' + (100 - currDijk.value) + '%)');
 				}
 			}
 			this._ROTDisplay.draw($players[0].posComp.cell.x, $players[0].posComp.cell.y, '@', 'white', 'yellow');
-
 			/*var edges = $players[0].AIComp.edges;
 			i = 0;
 			length = edges.length;

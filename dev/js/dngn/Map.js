@@ -37,7 +37,6 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 					var currValue = $mapString[i];
 					currValue = currValue === ' ' ? 0 : currValue;
 					currValue = currValue === '0' ? 1 : currValue;
-					console.log($mapString.charCodeAt(i));
 					initCell.call(this, i % this._width, Math.floor(i / this._width), currValue);
 				}
 			}
@@ -59,8 +58,17 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		},
 		placeActor: function ($actor)
 		{
-			var cell = this.getFreeCells().randomize().splice(0, 1)[0];
+			//var cell = this.getFreeCells().randomize().splice(0, 1)[0];
+			var cell = this.getStartingPosition();
 			this.addActorToCell(cell, $actor);
+		},
+		getStartingPosition: function ()
+		{
+			for (var i = 0, length = this._cells.array.length; i < length; i += 1)
+			{
+				var currCell = this._cells.array[i];
+				if (currCell.getTerrain() === 'S') { return currCell; }
+			}
 		},
 		addActorToCell: function ($cell, $actor)
 		{
@@ -97,6 +105,16 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		getCellsArray: function () { return this._cells.array; },
 
 		//getActorCells: function () { return this.actorCells; },
+		getCellsFromTerrain: function ($terrainType)
+		{
+			var toReturn = [];
+			for (var i = 0, length = this._cells.array.length; i < length; i += 1)
+			{
+				var currCell = this._cells.array[i];
+				if (currCell.getTerrain() === $terrainType) { toReturn.push(currCell); }
+			}
+			return toReturn;
+		},
 
 		getFreeCells: function ()
 		{

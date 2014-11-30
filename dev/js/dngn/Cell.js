@@ -24,7 +24,7 @@ define([],
 		},
 		isWalkable: function ()
 		{
-			return this._terrain === 0;
+			return this._terrain !== 1;
 		}
 	};
 });
