@@ -4,17 +4,33 @@ define(['ROT'],
 
 	var Display = {
 
+		cellSize: 30,
 		init: function ($map)
 		{
 			this._map = $map;
 			this._map.dispatcher.on('cellChange', this.cellChangeHandler.bind(this));
-			this._ROTDisplay = new ROT.Display();
+			//this._ROTDisplay = new ROT.Display();
+			this._context = document.getElementById('canvas').getContext('2d');
 			this._cellsToDraw = {};
-			document.body.appendChild(this._ROTDisplay.getContainer());
+			console.log(this._context);
+			//document.body.appendChild(this._ROTDisplay.getContainer());
 		},
 		cellChangeHandler: function ($key)
 		{
 			this._cellsToDraw[$key] = true;
+		},
+		drawCell: function ($cell, $text, $textColor, $cellColor)
+		{
+			var xPos = $cell.x * this.cellSize;
+			var yPos = $cell.y * this.cellSize;
+			this._context.strokeStyle = 'grey';
+			this._context.fillStyle = $cellColor ? $cellColor : 'white';
+			this._context.clearRect(xPos, yPos, this.cellSize, this.cellSize);
+			this._context.fillRect(xPos, yPos, this.cellSize, this.cellSize);
+			this._context.strokeRect(xPos, yPos, this.cellSize, this.cellSize);
+			this._context.fillStyle = $textColor ? $textColor : 'black';
+			this._context.font = '8pt monospace';
+			this._context.fillText($text, xPos + 5, yPos + this.cellSize * 0.5 + 5);
 		},
 		draw: function ($map, $players)
 		{
@@ -44,7 +60,8 @@ define(['ROT'],
 						break;
 				}
 				if (currCell.getActors().length >= 1) { toDraw = '@'; }
-				this._ROTDisplay.draw(x, y, toDraw);
+				this.drawCell(currCell, toDraw);
+				//this._ROTDisplay.draw(x, y, toDraw);
 			}
 			this._cellsToDraw = {};
 
@@ -80,17 +97,13 @@ define(['ROT'],
 			for (i; i < length; i += 1)
 			{
 				var currDijk = dijkstraMap.array[i];
-				if (currDijk.value === 0)
-				{
-					this._ROTDisplay.draw(currDijk.x, currDijk.y, 'x', 'white', 'red');
-				}
-				else
-				{
-					if (currDijk.value < 10) { this._ROTDisplay.draw(currDijk.x, currDijk.y, currDijk.value, 'white', 'black'); }
-					//this._ROTDisplay.draw(currDijk.x, currDijk.y, ' ', 'white', 'hsl(120, 0%, ' + (100 - currDijk.value) + '%)');
-				}
+				var textVal = currDijk.value.toString().substr(0, 3);
+				this.drawCell(currDijk.cell, textVal, 'black', 'hsl(' + currDijk.value * 255 + ', 80%, 80%)');
+				//this._ROTDisplay.draw(currDijk.cell.x, currDijk.cell.y, Math.round(currDijk.value / 16), 'white', 'black');
+			//	this._ROTDisplay.draw(currDijk.cell.x, currDijk.cell.y, ' ', 'white', 'hsl(120, 0%, ' + currDijk.value * 100 + '%)');
 			}
-			this._ROTDisplay.draw($players[0].posComp.cell.x, $players[0].posComp.cell.y, '@', 'white', 'yellow');
+			this.drawCell($players[0].posComp.cell, '@', 'white', 'red');
+			//this._ROTDisplay.draw($players[0].posComp.cell.x, $players[0].posComp.cell.y, '@', 'white', 'yellow');
 			/*var edges = $players[0].AIComp.edges;
 			i = 0;
 			length = edges.length;

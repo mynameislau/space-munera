@@ -4,13 +4,12 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 
 	var Map = {
 
-		_width: 80,
-		_height: 25,
-
 		init: function ()
 		{
 			this.dispatcher = Object.create(Dispatcher);
 
+			this._width = 80;
+			this._height = 25;
 			this._cells = new CoordinatedData();
 
 			this._invalidCells = [];
@@ -29,9 +28,13 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			};
 			if ($mapString)
 			{
-				console.log($mapString.length);
-				$mapString = $mapString.replace(/(\r\n|\n|\r)/gm, '');
-				console.log($mapString.length);
+				var lineBreak = /(\r\n|\n|\r)/gm;
+				this._width = $mapString.search(lineBreak);
+				$mapString = $mapString.replace(lineBreak, '');
+				this._height = $mapString.length / this._width;
+				console.log(this._width);
+				console.log(this._height);
+
 				for (var i = 0, mapLength = $mapString.length; i < mapLength; i += 1)
 				{
 					var currValue = $mapString[i];
@@ -48,6 +51,8 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				var digger = new ROT.Map.Digger(this._width, this._height);
 				digger.create(initCell.bind(this));
 			}
+
+			this.generateStaticInfluences();
 		},
 		invalidate: function ($key)
 		{
@@ -132,55 +137,9 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			}
 			return this._freeCells;
 		},
-		getDist: function ($cell1, $cell2)
-		{
-			var xDist = Math.abs($cell1.x - $cell2.x);
-			var yDist = Math.abs($cell1.y - $cell2.y);
-			return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
-		},
 		getNeighbours: function ($cell)
 		{
 			return this._cells.graph.getNeighbours($cell.x, $cell.y);
-		},
-		getDijkstraMap: function ($array, $goals)
-		{
-			var coordData = new CoordinatedData();
-			var dijArray = coordData.array;
-			var dijGraph = coordData.graph;
-
-			for (var i = 0, length = $array.length; i < length; i += 1)
-			{
-				var currCell = $array[i];
-				if (currCell.isWalkable())
-				{
-					var dij = { cell: currCell, x: currCell.x, y: currCell.y, value: $goals.indexOf(currCell) !== -1 ? 0 : Infinity };
-					coordData.addItem(dij, dij.x, dij.y);
-				}
-			}
-			var dijArrayLength = dijArray.length;
-			var changes;
-			do
-			{
-				changes = 0;
-				i = 0;
-				for (i; i < dijArrayLength; i += 1)
-				{
-					var currDij = dijArray[i];
-					var neighbours = dijGraph.getNeighbours(currDij.x, currDij.y);
-
-					for (var k = 0, neighLength = neighbours.length; k < neighLength; k += 1)
-					{
-						var currNeighbour = neighbours[k];
-						if (currDij.value > currNeighbour.value + 1)
-						{
-							changes += 1;
-							currDij.value = currNeighbour.value + 1;
-						}
-					}
-				}
-			}
-			while (changes > 0);
-			return coordData;
 		},
 		getVisibilityData: function ($cell)
 		{

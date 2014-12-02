@@ -1,5 +1,5 @@
-define([],
-	function () {
+define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData'],
+	function (Influences, InfluenceMap, CoordinatedData) {
 	'use strict';
 
 	return function ($entity)
@@ -49,10 +49,10 @@ define([],
 			if (cellIsEdge) { edges.push(currCell); }
 			//console.log('isEdge', cellIsEdge);
 		}
-		var dijkstraMap = map.getDijkstraMap(historyCells, edges);
+		var dijkstraMap = Influences.getDijkstraMap(historyCells, edges);
 		var lowest;
 		i = 0;
-		var neigh = dijkstraMap.getNeighbours($entity.posComp.cell.x, $entity.posComp.cell.y);
+		var neigh = dijkstraMap.getNeighbours($entity.posComp.cell.x, $entity.posComp.cell.y).randomize();
 		length = neigh.length;
 		for (i; i < length; i += 1)
 		{
@@ -64,25 +64,50 @@ define([],
 
 		/// test desirs
 		
-		var foodDijkstra = map.getDijkstraMap(map.getCellsArray(), map.getCellsFromTerrain('F'));
-		var waterDijkstra = map.getDijkstraMap(map.getCellsArray(), map.getCellsFromTerrain('W'));
+		var results = new CoordinatedData();
+		i = 0;
+		var mapCells = map.getCellsArray();
+		length = mapCells.length;
+		var toEvaluate = [];
+		for (i; i < length; i += 1)
+		{
+			var mapCell = mapCells[i];
+			if (mapCell.isWalkable()) { toEvaluate.push(mapCell); }
+		}
+		var foodDijkstra = new InfluenceMap(toEvaluate, map.getCellsFromTerrain('F'), { type: 'exponential' });
+		var waterDijkstra = new InfluenceMap(toEvaluate, map.getCellsFromTerrain('W'), { type: 'plain' });
+		var trapDijkstra = new InfluenceMap(toEvaluate, map.getCellsFromTerrain('X'), { type: 'fleeing', radius: 2, decay: 0 });
 		i = 0;
 		length = foodDijkstra.array.length;
+		console.log('length', foodDijkstra.array.length, trapDijkstra.array.length);
 		for (i; i < length; i += 1)
 		{
 			var foodDij = foodDijkstra.array[i];
 			var waterDij = waterDijkstra.array[i];
-			foodDij.value = Math.min(foodDij.value, waterDij.value);
+			var trapDij = trapDijkstra.array[i];
+			var foodInf = 1 * foodDij.value;
+			var waterInf = 1 * waterDij.value;
+			var trapInf = -1 * trapDij.value;
+			//console.log(trapDij.value);
+			//console.log(foodDij.value, waterDij.value, foodDij.value * (waterDij.value * 2));
+			results.addItem({ value: trapInf, cell: foodDij.cell }, foodDij.cell.x, foodDij.cell.y);
+			/*if (foodDij.cell.x === 69 && foodDij.cell.y === 12) { console.log('haut',waterDij.value); }
+			if (foodDij.cell.x === 69 && foodDij.cell.y === 14) { console.log('bas',waterDij.value); }*/
+			//foodDij.value += waterDij.value;//, foodDij.value);
 		}
 		i = 0;
+		//console.log(results);
 		lowest = undefined;
-		neigh = foodDijkstra.getNeighbours($entity.posComp.cell.x, $entity.posComp.cell.y);
+		neigh = results.getNeighbours($entity.posComp.cell.x, $entity.posComp.cell.y).randomize();
 		length = neigh.length;
 		for (i; i < length; i += 1)
 		{
-			lowest = (!lowest || lowest.value > neigh[i].value) ? neigh[i] : lowest;
+			lowest = (!lowest || lowest.value < neigh[i].value) ? neigh[i] : lowest;
 		}
-		AIComp.degueu = foodDijkstra;
+		AIComp.degueu = results;
+		//console.log(results.getItemFromCoords(69, 12).value);//, foodDijkstra.getItemFromCoords(69, 12).value, waterDijkstra.getItemFromCoords(69, 12).value);
+		//console.log(results.getItemFromCoords(69, 14).value);//, foodDijkstra.getItemFromCoords(69, 14).value, waterDijkstra.getItemFromCoords(69, 14).value);
+		//console.log('lowest', lowest.value);
 		$entity.AIComp.destination = lowest.cell;
 		/// fin testDesirs
 
