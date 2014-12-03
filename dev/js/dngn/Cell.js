@@ -16,15 +16,6 @@ define([],
 		addActor: function ($actor) { this._actors.push($actor); },
 		removeActor: function ($actor) { this._actors.splice(this._actors.indexOf($actor, 1)); },
 		getTerrain: function ($terrain) { return this._terrain; },
-		setTerrain: function ($terrain) { this._terrain = $terrain; },
-
-		lightPasses: function ()
-		{
-			return this._terrain !== 1;
-		},
-		isWalkable: function ()
-		{
-			return this._terrain !== 1;
-		}
+		setTerrain: function ($terrain) { this._terrain = $terrain; }
 	};
 });

@@ -7,7 +7,7 @@ define([],
 	};
 
 	Graph.prototype = [];
-	Graph.prototype.getItem = function ($x, $y)
+	Graph.prototype.getNode = function ($x, $y)
 	{
 		if (this[$x] && this[$x][$y]) { return this[$x][$y]; }
 	};

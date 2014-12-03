@@ -12,9 +12,13 @@ define(['ROT'],
 		{
 			this._ROTEngine.start();
 		},
-		add: function ($player)
+		add: function ($actor)
 		{
-			this._scheduler.add($player, true);
+			this._scheduler.add($actor, true);
+		},
+		remove: function ($actor)
+		{
+			this._scheduler.remove($actor);
 		}
 	};
 

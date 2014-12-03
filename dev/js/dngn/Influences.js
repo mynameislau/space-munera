@@ -14,7 +14,7 @@ define(['dngn/CoordinatedData'],
 			{
 				var currCell = $array[i];
 				var dij = { cell: currCell, x: currCell.x, y: currCell.y, value: $goals.indexOf(currCell) !== -1 ? 0 : Infinity };
-				coordData.addItem(dij, dij.x, dij.y);
+				coordData.addNode(dij, dij.x, dij.y);
 			}
 			var dijArrayLength = dijArray.length;
 			var changes;

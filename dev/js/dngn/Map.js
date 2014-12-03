@@ -8,8 +8,8 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		{
 			this.dispatcher = Object.create(Dispatcher);
 
-			this._width = 80;
-			this._height = 25;
+			this._width = 50;
+			this._height = 50;
 			this._cells = new CoordinatedData();
 
 			this._invalidCells = [];
@@ -23,7 +23,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			{
 				var currCell = Object.create(Cell);
 				currCell.init($x, $y, $terrain);
-				this._cells.addItem(currCell, $x, $y);
+				this._cells.addNode(currCell, $x, $y);
 				this.invalidate(currCell.key);
 			};
 			if ($mapString)
@@ -52,7 +52,20 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				digger.create(initCell.bind(this));
 			}
 
-			this.generateStaticInfluences();
+			//this.setBonuses();
+		},
+		setBonuses: function ()
+		{
+			//bonuses
+			var i = 0;
+			var length = 15;
+			for (i; i < length; i += 1)
+			{
+				var bonus = 'W';
+				if (i > 5) { bonus = 'F'; }
+				if (i > 10) { bonus = 'H'; }
+				this.changeTerrain(this.getFreeCells().randomize()[0], bonus);
+			}
 		},
 		invalidate: function ($key)
 		{
@@ -63,9 +76,14 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		},
 		placeActor: function ($actor)
 		{
-			//var cell = this.getFreeCells().randomize().splice(0, 1)[0];
+			//var cell = this.getFreeCells().randomize()[0];
 			var cell = this.getStartingPosition();
 			this.addActorToCell(cell, $actor);
+		},
+		changeTerrain: function ($cell, $terrain)
+		{
+			$cell.setTerrain($terrain);
+			this.invalidate($cell.key);
 		},
 		getStartingPosition: function ()
 		{
@@ -103,9 +121,11 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 
 		getCell: function ($key) { return this._cells.obj[$key]; },
 		
-		getCellFromCoords: function ($x, $y) { return this._cells.getItemFromCoords($x, $y); },
+		getCellFromCoords: function ($x, $y) { return this._cells.getNodeFromCoords($x, $y); },
 		
 		getCells: function () { return this._cells.obj; },
+
+		getCellData: function () { return this._cells; },
 
 		getCellsArray: function () { return this._cells.array; },
 
@@ -129,7 +149,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				for (var i = 0, cellsLength = this._cells.array.length; i < cellsLength; i += 1)
 				{
 					var currCell = this._cells.array[i];
-					if (currCell.isWalkable())
+					if (currCell.getTerrain() === 0)
 					{
 						this._freeCells.push(currCell);
 					}
@@ -140,34 +160,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		getNeighbours: function ($cell)
 		{
 			return this._cells.graph.getNeighbours($cell.x, $cell.y);
-		},
-		getVisibilityData: function ($cell)
-		{
-			var lightPasses = function (x, y) {
-				var cell = this.getCellFromCoords(x, y);
-				return cell ? cell.lightPasses() : false;
-			};
-
-			var fov = new ROT.FOV.PreciseShadowcasting(lightPasses.bind(this));
-
-			var visibleCells = [];
-			fov.compute($cell.x, $cell.y, 10, function (x, y, r, visibility) {
-				/*var xDist = Math.abs(stp.x - x);
-				var yDist = Math.abs(stp.y - y);
-				var hyp = Math.sqrt(Math.pow(xDist, 2), Math.pow(yDist, 2));*/
-				var cell = this.getCellFromCoords(x, y);
-				if (!cell) { return; }
-				visibleCells.push({ cell: cell, r: r, visibility: visibility });
-				//var currCell = this.getCellFromCoords(x, y);
-				// if (currCell.isWalkable())
-				// {
-				// 	farestWalkable = currCell;
-				// }
-			}.bind(this));
-			
-			return visibleCells;
 		}
-		
 	};
 
 	return Map;

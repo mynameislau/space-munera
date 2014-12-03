@@ -12,25 +12,39 @@ define(['ROT'],
 			//this._ROTDisplay = new ROT.Display();
 			this._context = document.getElementById('canvas').getContext('2d');
 			this._cellsToDraw = {};
-			console.log(this._context);
 			//document.body.appendChild(this._ROTDisplay.getContainer());
 		},
 		cellChangeHandler: function ($key)
 		{
 			this._cellsToDraw[$key] = true;
 		},
-		drawCell: function ($cell, $text, $textColor, $cellColor)
+		drawCell: function ($x, $y, $text, $textColor, $cellColor)
 		{
-			var xPos = $cell.x * this.cellSize;
-			var yPos = $cell.y * this.cellSize;
+			var xPos = $x * this.cellSize;
+			var yPos = $y * this.cellSize;
 			this._context.strokeStyle = 'grey';
-			this._context.fillStyle = $cellColor ? $cellColor : 'white';
+			this._context.fillStyle = $cellColor ? $cellColor : 'black';
 			this._context.clearRect(xPos, yPos, this.cellSize, this.cellSize);
 			this._context.fillRect(xPos, yPos, this.cellSize, this.cellSize);
 			this._context.strokeRect(xPos, yPos, this.cellSize, this.cellSize);
 			this._context.fillStyle = $textColor ? $textColor : 'black';
 			this._context.font = '8pt monospace';
 			this._context.fillText($text, xPos + 5, yPos + this.cellSize * 0.5 + 5);
+		},
+		drawActor: function ($actor)
+		{
+			var cell = $actor.posComp.cell;
+			for (var i = 0, length = cell.getActors().length; i < length; i += 1)
+			{
+				var xPos = cell.x * this.cellSize;
+				var yPos = cell.y * this.cellSize;
+				var currActor = cell.getActors()[i];
+				this._context.fillStyle = 'hsl(' + currActor.vitalsComp.health.value * 100 + ', 100%, 50%)';
+				this._context.beginPath();
+				this._context.arc(xPos + this.cellSize * 0.5 - (this.cellSize * 0.5) * (i / length), yPos + this.cellSize * 0.5, 5, 0, 2 * Math.PI);
+				this._context.fill();
+			}
+			this._cellsToDraw[cell.key] = true;
 		},
 		draw: function ($map, $players)
 		{
@@ -44,6 +58,7 @@ define(['ROT'],
 				var y = parseInt(parts[1]);
 
 				var toDraw = 0;
+				var cellColor = 'black';
 				switch (currCell.getTerrain())
 				{
 					case 1:
@@ -54,13 +69,14 @@ define(['ROT'],
 						break;
 					case 0:
 						toDraw = '.';
+						cellColor = 'grey';
 						break;
 					default:
 						toDraw = currCell.getTerrain();
+						cellColor = 'grey';
 						break;
 				}
-				if (currCell.getActors().length >= 1) { toDraw = '@'; }
-				this.drawCell(currCell, toDraw);
+				this.drawCell(currCell.x, currCell.y, toDraw, 'white', cellColor);
 				//this._ROTDisplay.draw(x, y, toDraw);
 			}
 			this._cellsToDraw = {};
@@ -90,19 +106,40 @@ define(['ROT'],
 			}*/
 
 			/******** dijkstra map ********/
-
-			var dijkstraMap = $players[0].AIComp.degueu;
+			
 			var i = 0;
-			var length = dijkstraMap.array.length;
+			var length;
+			var coordData = window.debug.influence || window.debug.memory;
+			if (coordData)
+			{
+				length = coordData.array.length;
+				for (i; i < length; i += 1)
+				{
+					var curr = coordData.array[i];
+					if (window.debug.influence)
+					{
+						var textVal = curr.value.toString().substr(0, 4);
+						this.drawCell(curr.x, curr.y, textVal, 'black', 'hsl(' + curr.value * 255 + ', 80%, 80%)');
+					}
+					else
+					{
+						this._cellsToDraw[curr.cell.key] = true;
+						this.drawCell(curr.cell.x, curr.cell.y, ' ', 'black', 'white');
+					}
+					//this._ROTDisplay.draw(curr.cell.x, curr.cell.y, Math.round(curr.value / 16), 'white', 'black');
+				//	this._ROTDisplay.draw(curr.cell.x, curr.cell.y, ' ', 'white', 'hsl(120, 0%, ' + curr.value * 100 + '%)');
+				}
+			}
+			
+
+			i = 0;
+			length = $players.length;
 			for (i; i < length; i += 1)
 			{
-				var currDijk = dijkstraMap.array[i];
-				var textVal = currDijk.value.toString().substr(0, 3);
-				this.drawCell(currDijk.cell, textVal, 'black', 'hsl(' + currDijk.value * 255 + ', 80%, 80%)');
-				//this._ROTDisplay.draw(currDijk.cell.x, currDijk.cell.y, Math.round(currDijk.value / 16), 'white', 'black');
-			//	this._ROTDisplay.draw(currDijk.cell.x, currDijk.cell.y, ' ', 'white', 'hsl(120, 0%, ' + currDijk.value * 100 + '%)');
+				var currPlayer = $players[i];
+				var playerPos = currPlayer.posComp.cell;
+				this.drawActor(currPlayer);
 			}
-			this.drawCell($players[0].posComp.cell, '@', 'white', 'red');
 			//this._ROTDisplay.draw($players[0].posComp.cell.x, $players[0].posComp.cell.y, '@', 'white', 'yellow');
 			/*var edges = $players[0].AIComp.edges;
 			i = 0;

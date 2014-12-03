@@ -2,9 +2,9 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 	function (CoordinatedData, MathUtils) {
 	'use strict';
 
-	var InfluenceMap = function ($array, $goals, $options)
+	var InfluenceMap = function ($array, $goals, $properties)
 	{
-		switch ($options.type)
+		switch ($properties.type)
 		{
 			case 'fleeing':
 				this.generateFleeingMap($array, $goals);
@@ -13,20 +13,21 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 				this.generatePlain($array, $goals);
 				break;
 			case 'zone':
-				this.generateZone($array, $goals, $options.radius);
+				this.generateZone($array, $goals, $properties.radius);
 				break;
 			default:
-			case 'exponential':
-				this.generateExponential($array, $goals);
+				this.generateExponential($array, $goals, $properties.type);
 				break;
 		}
+
+		this.modifiers = $properties.modifiers;
 
 		this.array = this._coordinatedData.array;
 		this.graph = this._coordinatedData.graph;
 		this.obj = this._coordinatedData.obj;
-		this.getItemFromCoords = this._coordinatedData.getItemFromCoords;
+		this.getNodeFromCoords = this._coordinatedData.getNodeFromCoords;
 		this.getNeighbours = this._coordinatedData.getNeighbours;
-		this.addItem = this._coordinatedData.addItem;
+		this.addNode = this._coordinatedData.addNode;
 	};
 	InfluenceMap.prototype.generateFleeingMap = function ($array, $goals)
 	{
@@ -39,13 +40,15 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 		this.dijsktraScan(dijkstraFirst);
 		this._coordinatedData = dijkstraFirst;
 	};
-	InfluenceMap.prototype.generateExponential = function ($array, $goals)
+	InfluenceMap.prototype.generateExponential = function ($array, $goals, $type)
 	{
 		this._coordinatedData = this.generateDijkstra($array, $goals);
 		for (var i = 0, length = this._coordinatedData.array.length; i < length; i += 1)
 		{
 			var currData = this._coordinatedData.array[i];
-			currData.value = 1 / (currData.value + 1);
+			var distance = currData.value;
+			if (!$type || $type === 'exponential') { currData.value = 1 / (distance + 1); }
+			else if ($type === 'soft') { currData.value = 1 / (1 + distance * 0.4); }
 		}
 	};
 	InfluenceMap.prototype.generatePlain = function ($array, $goals)
@@ -69,14 +72,13 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 		{
 			var currCell = $array[i];
 			var dij = { cell: currCell, x: currCell.x, y: currCell.y, value: $goals.indexOf(currCell) !== -1 ? 0 : Infinity };
-			coordData.addItem(dij, dij.x, dij.y);
+			coordData.addNode(dij, dij.x, dij.y);
 		}
 
 		this.dijsktraScan(coordData);
 		
 		return coordData;
 	};
-
 	InfluenceMap.prototype.dijsktraScan = function ($dijkstraCoordData)
 	{
 		var dijArray = $dijkstraCoordData.array;
@@ -105,6 +107,41 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 			}
 		}
 		while (changes > 0);
+	};
+	InfluenceMap.getActorInfluence = function ($actor, $cellsArray)
+	{
+		var properties = {
+			type: 'exponential',
+			modifiers: {
+				attack: 1
+			}
+		};
+		return new InfluenceMap($cellsArray, [$actor], properties);
+	};
+	InfluenceMap.getExplorationInfluence = function ($cellsArray, $goals)
+	{
+		var properties = {
+			type: 'soft',
+			modifiers: {
+				exploration: 1
+			}
+		};
+		return new InfluenceMap($cellsArray, $goals, properties);
+	};
+	InfluenceMap.getInfluencesForCell = function ($cell, $cellsArray)
+	{
+		var influencesArray = [];
+		if ($cell.getTerrain() === 'W' || $cell.getTerrain() === 'F' || $cell.getTerrain() === 'H')
+		{
+			var properties = {
+				type: 'soft',
+				modifiers: {}
+			};
+			properties.modifiers[$cell.getTerrain()] = 4;
+			var influence = new InfluenceMap($cellsArray, [$cell], properties);
+			influencesArray.push(influence);
+		}
+		return influencesArray;
 	};
 
 	return InfluenceMap;

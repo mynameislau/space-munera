@@ -8,15 +8,19 @@ define(['dngn/Graph'],
 		this.obj = {};
 		this.graph = new Graph();
 	};
-	CoordinatedData.prototype.getItemFromCoords = function ($x, $y)
+	CoordinatedData.prototype.getNodeFromKey = function ($key)
 	{
-		return this.graph.getItem($x, $y);
+		return this.obj[$key];
+	};
+	CoordinatedData.prototype.getNodeFromCoords = function ($x, $y)
+	{
+		return this.graph.getNode($x, $y);
 	};
 	CoordinatedData.prototype.getNeighbours = function ($x, $y)
 	{
 		return this.graph.getNeighbours($x, $y);
 	};
-	CoordinatedData.prototype.addItem = function ($item, $x, $y)
+	CoordinatedData.prototype.addNode = function ($item, $x, $y)
 	{
 		this.obj[$x + ',' + $y] = $item;
 		this.array.push($item);
