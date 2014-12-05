@@ -17,7 +17,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 
 			this.invalidate();
 		},
-		generate: function ($mapString)
+		generate: function ($parsed)
 		{
 			var initCell = function ($x, $y, $terrain)
 			{
@@ -26,21 +26,16 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				this._cells.addNode(currCell, $x, $y);
 				this.invalidate(currCell.key);
 			};
-			if ($mapString)
+			if ($parsed)
 			{
-				var lineBreak = /(\r\n|\n|\r)/gm;
-				this._width = $mapString.search(lineBreak);
-				$mapString = $mapString.replace(lineBreak, '');
-				this._height = $mapString.length / this._width;
-				console.log(this._width);
-				console.log(this._height);
+				this._width = $parsed.width;
+				this._height = $parsed.height;
 
-				for (var i = 0, mapLength = $mapString.length; i < mapLength; i += 1)
+				for (var i = 0, mapLength = $parsed.mapArray.length; i < mapLength; i += 1)
 				{
-					var currValue = $mapString[i];
-					currValue = currValue === ' ' ? 0 : currValue;
-					currValue = currValue === '0' ? 1 : currValue;
-					initCell.call(this, i % this._width, Math.floor(i / this._width), currValue);
+					var currValue = $parsed.mapArray[i];
+					
+					initCell.call(this, currValue.x, currValue.y, currValue.terrain);
 				}
 			}
 			else
@@ -74,10 +69,19 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			//this.actorCells = undefined;
 			//this.actors = undefined;
 		},
-		placeActor: function ($actor)
+		placeActor: function ($actor, $position)
 		{
-			//var cell = this.getFreeCells().randomize()[0];
-			var cell = this.getStartingPosition();
+			var cell;
+			if ($position)
+			{
+				cell = this.getCellFromCoords($position.x, $position.y);
+			}
+			else
+			{
+				//cell = this.getFreeCells().randomize()[0];
+				cell = this.getStartingPosition();
+			}
+			
 			this.addActorToCell(cell, $actor);
 		},
 		changeTerrain: function ($cell, $terrain)

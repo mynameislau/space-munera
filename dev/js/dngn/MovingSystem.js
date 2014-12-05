@@ -1,5 +1,5 @@
-define(['dngn/Pathfinder'],
-	function (Pathfinder) {
+define([],
+	function () {
 	'use strict';
 
 	return {

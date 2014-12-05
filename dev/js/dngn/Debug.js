@@ -9,7 +9,7 @@ define(['dngn/CoordinatedData'],
 			window.debug = this;
 			return this;
 		},
-		sumInfluences: function ($influencesArray, $addingFunction)
+		sumInfluences: function ($influencesArray, $addingFunction, $entity)
 		{
 			this.influence = new CoordinatedData();
 
@@ -22,7 +22,7 @@ define(['dngn/CoordinatedData'],
 				{
 					var currNode = currInf.array[k];
 					var sumNode = this.influence.getNodeFromCoords(currNode.x, currNode.y);
-					var multiplied = $addingFunction(currNode.value, currInf.modifiers);
+					var multiplied = $addingFunction(currNode, currInf, $entity);
 					if (!sumNode)
 					{
 						this.influence.addNode({value: multiplied, x: currNode.x, y: currNode.y}, currNode.x, currNode.y);

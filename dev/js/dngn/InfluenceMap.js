@@ -20,7 +20,7 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 				break;
 		}
 
-		this.modifiers = $properties.modifiers;
+		this.properties = $properties;
 
 		this.array = this._coordinatedData.array;
 		this.graph = this._coordinatedData.graph;
@@ -74,6 +74,13 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 			var dij = { cell: currCell, x: currCell.x, y: currCell.y, value: $goals.indexOf(currCell) !== -1 ? 0 : Infinity };
 			coordData.addNode(dij, dij.x, dij.y);
 		}
+		i = 0;
+		length = $goals.length;
+		for (i; i < length; i += 1)
+		{
+			var currGoal = $goals[i];
+			if (!coordData.getNodeFromCoords(currGoal.x, currGoal.y)) { coordData.addNode({ cell: currGoal, x: currGoal.x, y: currGoal.y, value: 0 }, currGoal.x, currGoal.y); }
+		}
 
 		this.dijsktraScan(coordData);
 		
@@ -107,41 +114,6 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 			}
 		}
 		while (changes > 0);
-	};
-	InfluenceMap.getActorInfluence = function ($actor, $cellsArray)
-	{
-		var properties = {
-			type: 'exponential',
-			modifiers: {
-				attack: 1
-			}
-		};
-		return new InfluenceMap($cellsArray, [$actor], properties);
-	};
-	InfluenceMap.getExplorationInfluence = function ($cellsArray, $goals)
-	{
-		var properties = {
-			type: 'soft',
-			modifiers: {
-				exploration: 1
-			}
-		};
-		return new InfluenceMap($cellsArray, $goals, properties);
-	};
-	InfluenceMap.getInfluencesForCell = function ($cell, $cellsArray)
-	{
-		var influencesArray = [];
-		if ($cell.getTerrain() === 'W' || $cell.getTerrain() === 'F' || $cell.getTerrain() === 'H')
-		{
-			var properties = {
-				type: 'soft',
-				modifiers: {}
-			};
-			properties.modifiers[$cell.getTerrain()] = 4;
-			var influence = new InfluenceMap($cellsArray, [$cell], properties);
-			influencesArray.push(influence);
-		}
-		return influencesArray;
 	};
 
 	return InfluenceMap;

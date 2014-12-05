@@ -4,35 +4,45 @@ define(['ROT'],
 
 	var AbilityUtils;
 	AbilityUtils = {
-		canSeeThrough: function ($cell, $abilities)
+		canSeeThrough: function ($cell, $entity)
 		{
+			for (var i = 0, length = $cell.getActors().length; i < length; i += 1)
+			{
+				var currActor = $cell.getActors()[i];
+				if (currActor.bodyComp.bodyType === 'door' && currActor.ordersComp.team !== $entity.ordersComp.team) { return false; }
+			}
 			return $cell.getTerrain() !== 1;
 		},
-		isWalkable: function ($cell, $abilities)
+		isWalkable: function ($cell, $entity)
 		{
+			for (var i = 0, length = $cell.getActors().length; i < length; i += 1)
+			{
+				var currActor = $cell.getActors()[i];
+				if (currActor.bodyComp.bodyType === 'door' && currActor.ordersComp.team !== $entity.ordersComp.team) { return false; }
+			}
 			return $cell.getTerrain() !== 1;
 		},
-		getWalkableCells: function ($cells, $abilities)
+		getWalkableCells: function ($cells, $entity)
 		{
 			var toReturn = [];
 			for (var i = 0, length = $cells.length; i < length; i += 1)
 			{
 				var currCell = $cells[i];
-				if (AbilityUtils.isWalkable(currCell, $abilities)) { toReturn.push(currCell); }
+				if (AbilityUtils.isWalkable(currCell, $entity)) { toReturn.push(currCell); }
 			}
 			return toReturn;
 		},
-		getVisibilityData: function ($cellsData, $fromCell, $abilities)
+		getVisibilityData: function ($cellsData, $fromCell, $entity)
 		{
 			var shadowCastingCallback = function ($xPos, $yPos)
 			{
 				var cell = $cellsData.getNodeFromCoords($xPos, $yPos);
-				if (cell) { return AbilityUtils.canSeeThrough(cell, $abilities); }
+				if (cell) { return AbilityUtils.canSeeThrough(cell, $entity); }
 			};
 			var fov = new ROT.FOV.PreciseShadowcasting(shadowCastingCallback);
 
 			var visibilityData = { data: [], cellsArray: [] };
-			fov.compute($fromCell.x, $fromCell.y, $abilities.sight, function ($xPos, $yPos, $r, $visibility)
+			fov.compute($fromCell.x, $fromCell.y, $entity.bodyComp.sight, function ($xPos, $yPos, $r, $visibility)
 			{
 				var cell = $cellsData.getNodeFromCoords($xPos, $yPos);
 				if (cell)

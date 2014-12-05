@@ -3,8 +3,13 @@ define([],
 	'use strict';
 
 	return {
-		init: function ()
+		init: function ($data)
 		{
+			this.bodyType = $data.bodyType;
+
+			this.sight = 10;
+			this.strength = 1 + Math.random() * 1;
+			
 			var vital = {
 				init: function ($name)
 				{

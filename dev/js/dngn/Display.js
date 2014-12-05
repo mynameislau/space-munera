@@ -12,6 +12,7 @@ define(['ROT'],
 			//this._ROTDisplay = new ROT.Display();
 			this._context = document.getElementById('canvas').getContext('2d');
 			this._cellsToDraw = {};
+			this._drawnActorCells = [];
 			//document.body.appendChild(this._ROTDisplay.getContainer());
 		},
 		cellChangeHandler: function ($key)
@@ -22,7 +23,7 @@ define(['ROT'],
 		{
 			var xPos = $x * this.cellSize;
 			var yPos = $y * this.cellSize;
-			this._context.strokeStyle = 'grey';
+			this._context.strokeStyle = '#4e5a4f';
 			this._context.fillStyle = $cellColor ? $cellColor : 'black';
 			this._context.clearRect(xPos, yPos, this.cellSize, this.cellSize);
 			this._context.fillRect(xPos, yPos, this.cellSize, this.cellSize);
@@ -34,21 +35,38 @@ define(['ROT'],
 		drawActor: function ($actor)
 		{
 			var cell = $actor.posComp.cell;
+			if (this._drawnActorCells.indexOf(cell) !== -1) { return; }
 			for (var i = 0, length = cell.getActors().length; i < length; i += 1)
 			{
 				var xPos = cell.x * this.cellSize;
 				var yPos = cell.y * this.cellSize;
 				var currActor = cell.getActors()[i];
-				this._context.fillStyle = 'hsl(' + currActor.vitalsComp.health.value * 100 + ', 100%, 50%)';
+				var teamColor = currActor.ordersComp.team === 'player' ? 100 : 0;
+				var isUnit = currActor.bodyComp.bodyType === 'unit';
+				this._context.fillStyle = 'hsl(' + (-100 + teamColor + currActor.bodyComp.health.value * 100) + ', 100%, 50%)';
 				this._context.beginPath();
-				this._context.arc(xPos + this.cellSize * 0.5 - (this.cellSize * 0.5) * (i / length), yPos + this.cellSize * 0.5, 5, 0, 2 * Math.PI);
+				if (isUnit)
+				{
+					var rad = 3;
+					var maxSize = this.cellSize - 2 * rad;
+					var totalSize = Math.min(maxSize, rad * 2 * length);
+					var uXPos = rad + xPos + maxSize * 0.5 + totalSize * (i / length) - totalSize * 0.5;
+					var uYPos = yPos + rad + maxSize * 0.5 - totalSize * 0.5 + Math.random() * totalSize * 0.5;
+					this._context.arc(uXPos, uYPos, 3, 0, 2 * Math.PI);
+				}
+				else
+				{
+					this._context.fillRect(xPos + this.cellSize * 0.5 - 5, yPos + this.cellSize * 0.5 - 5, 10, 10);
+				}
 				this._context.fill();
 			}
 			this._cellsToDraw[cell.key] = true;
+			this._drawnActorCells.push(cell);
 		},
-		draw: function ($map, $players)
+		draw: function ($map, $actors)
 		{
 			var cells = this._cellsToDraw;
+			this._drawnActorCells = [];
 			
 			for (var key in cells)
 			{
@@ -68,15 +86,15 @@ define(['ROT'],
 						toDraw = 'b';
 						break;
 					case 0:
-						toDraw = '.';
-						cellColor = 'grey';
+						toDraw = ' ';
+						cellColor = '#252b26';
 						break;
 					default:
 						toDraw = currCell.getTerrain();
-						cellColor = 'grey';
+						cellColor = '#252b26';
 						break;
 				}
-				this.drawCell(currCell.x, currCell.y, toDraw, 'white', cellColor);
+				this.drawCell(currCell.x, currCell.y, toDraw, '#24e33a', cellColor);
 				//this._ROTDisplay.draw(x, y, toDraw);
 			}
 			this._cellsToDraw = {};
@@ -85,7 +103,7 @@ define(['ROT'],
 
 			/******* test *****/
 
-			/*var actor = $players[0];
+			/*var actor = $actors[0];
 			var actorHistoryData = actor.AIComp.history;
 			for (var i = 0, length = actorHistoryData.length; i < length; i += 1)
 			{
@@ -119,7 +137,7 @@ define(['ROT'],
 					if (window.debug.influence)
 					{
 						var textVal = curr.value.toString().substr(0, 4);
-						this.drawCell(curr.x, curr.y, textVal, 'black', 'hsl(' + curr.value * 255 + ', 80%, 80%)');
+						this.drawCell(curr.x, curr.y, textVal, 'black', 'hsla(' + curr.value * 255 + ', 80%, 80%, 0.5)');
 					}
 					else
 					{
@@ -133,10 +151,10 @@ define(['ROT'],
 			
 
 			i = 0;
-			length = $players.length;
+			length = $actors.length;
 			for (i; i < length; i += 1)
 			{
-				var currPlayer = $players[i];
+				var currPlayer = $actors[i];
 				var playerPos = currPlayer.posComp.cell;
 				this.drawActor(currPlayer);
 			}

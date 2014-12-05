@@ -31,15 +31,13 @@ require(['jquery',
 	{
 		$(document).ready(function ()
 		{
-			console.log('document ready');
 
 			var loaderCompleteHandler = function ()
 			{
 				console.log('loader complete');
-
-				console.log(Dungeon);
+				
 				var dungeon = Object.create(Dungeon);
-				dungeon.init(loader.getContent('map'));
+				dungeon.init(loader.getContent('map'), loader.getContent('names'));
 				
 
 				//MUTANT
@@ -65,12 +63,12 @@ require(['jquery',
 			};
 
 			var loader = new LiteLoader({ completeHandler : loaderCompleteHandler, errorHandler: loaderErrorHandler });
-			console.log(loader);
 			loader.appendJSONLoader({ name : 'tags', URL : 'data/tags.json' });
 			loader.appendJSONLoader({ name : 'genes', URL : 'data/genes.json' });
 			loader.appendJSONLoader({ name : 'interpolations', URL : 'data/interpolations.json' });
 			loader.appendJSONLoader({ name : 'creatures', URL : 'data/creatures.json' });
-			loader.appendStringLoader({ name : 'map', URL : 'data/map2.dmap' });
+			loader.appendStringLoader({ name : 'map', URL : 'data/map3.dmap' });
+			loader.appendStringLoader({ name : 'names', URL : 'data/pokenomfrench.txt' });
 			loader.load();
 		});
 	});

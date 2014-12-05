@@ -1,5 +1,5 @@
-define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/AbilityUtils'],
-	function (Influences, InfluenceMap, CoordinatedData, AbilityUtils) {
+define(['dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/AbilityUtils', 'dngn/InfluenceUtils'],
+	function (InfluenceMap, CoordinatedData, AbilityUtils, InfluenceUtils) {
 	'use strict';
 
 	return {
@@ -9,25 +9,24 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 			var map = $entity.mapComp;
 			var posComp = $entity.posComp;
 			var selfCell = posComp.cell;
-			var abilities = $entity.abilitiesComp;
-			var vitalsComp = $entity.vitalsComp;
+			var bodyComp = $entity.bodyComp;
 			//recording visible data into memory 
 			var actorsInfluences = [];
-			var visibilityData = AbilityUtils.getVisibilityData(map.getCellData(), posComp.cell, abilities);
+			var visibilityData = AbilityUtils.getVisibilityData(map.getCellData(), posComp.cell, $entity);
 			var i = 0;
 			var k = 0;
 			var length = visibilityData.data.length;
-			//console.log($entity.prenom + '----------------------------');
 			for (i; i < length; i += 1)
 			{
 				var currVisi = visibilityData.data[i];
 				var visibleCell = currVisi.cell;
 				var newItem = { cell: visibleCell, age: 0 };
-				var walkableMapCells = AbilityUtils.getWalkableCells(map.getCellsArray(), abilities);
-				var influenceData = InfluenceMap.getInfluencesForCell(visibleCell, walkableMapCells);
+				var walkableMapCells = AbilityUtils.getWalkableCells(map.getCellsArray(), $entity);
+				var influenceData = InfluenceUtils.getInfluencesForCell(visibleCell, walkableMapCells);
 				newItem.influenceData = influenceData;
 				AIComp.addMemoryItem(newItem);
 
+				//computing visible actors influences
 				var cellActors = visibleCell.getActors();
 				var cellActorsLength = cellActors.length;
 				k = 0;
@@ -35,7 +34,7 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 				{
 					var currActor = cellActors[k];
 					if (currActor === $entity) { continue; }
-					actorsInfluences.push(InfluenceMap.getActorInfluence(currActor.posComp.cell, AbilityUtils.getWalkableCells(visibilityData.cellsArray, abilities)));
+					actorsInfluences.push(InfluenceUtils.getActorInfluence(currActor, AbilityUtils.getWalkableCells(visibilityData.cellsArray, $entity)));
 					//window.debug.coordData = actorsInfluences[actorsInfluences.length - 1];
 				}
 			}
@@ -43,7 +42,7 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 			//calculating exploration influence
 			var isEdge = function ($cell)
 			{
-				if (AbilityUtils.canSeeThrough($cell, abilities))
+				if (AbilityUtils.canSeeThrough($cell, $entity))
 				{
 					var neighbours = map.getNeighbours($cell);
 					for (var i = 0, length = neighbours.length; i < length; i += 1)
@@ -65,12 +64,11 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 
 				currMemory = memory[i];
 				var currCell = currMemory.cell;
-				if (AbilityUtils.isWalkable(currCell)) { explorableCells.push(currCell); }
+				if (AbilityUtils.isWalkable(currCell, $entity)) { explorableCells.push(currCell); }
 				var cellIsEdge = isEdge(currCell);
 				if (cellIsEdge) { edges.push(currCell); }
-				//console.log('isEdge', cellIsEdge);
 			}
-			var explorationInfluence = InfluenceMap.getExplorationInfluence(explorableCells, edges);
+			var explorationInfluence = InfluenceUtils.getExplorationInfluence(explorableCells, edges);
 
 			//retrieving influences
 			var influencesArray = [explorationInfluence];
@@ -86,23 +84,14 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 
 
 
-
+			//choosing best adjacent cell
 			var highScore = 0;
 			i = 0;
 			var close = AIComp.getMemoryNeighbours(posComp.cell.x, posComp.cell.y).randomize();
 			close.push({ cell: posComp.cell });
 
 			length = close.length;
-			var multiply = function ($value, $modifiers)
-			{
-				var multiplied = 0;
-				multiplied += $modifiers.exploration ? 2 * $value : 0;
-				multiplied += $modifiers.W ? 1500 * (Math.pow(1 - vitalsComp.water.value, 7)) * $value : 0;
-				multiplied += $modifiers.F ? 1500 * (Math.pow(1 - vitalsComp.food.value, 7)) * $value : 0;
-				multiplied += $modifiers.H ? 3000 * (Math.pow(1 - vitalsComp.health.value, 7)) * $value : 0;
-				multiplied += $modifiers.attack ? 2 * $value * vitalsComp.health.value : 0;
-				return multiplied;
-			};
+			
 			for (i; i < length; i += 1)
 			{
 				var currNeigh = close[i];
@@ -113,10 +102,9 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 				for (k; k < influencesLength; k += 1)
 				{
 					var currInf = influencesArray[k];
-					//if (currInf.modifiers.W) { window.debug.coordData = currInf; }
 					var currInfNode = currInf.getNodeFromCoords(currNeigh.cell.x, currNeigh.cell.y);
 					if (!currInfNode) { break; }
-					currScore += multiply(currInfNode.value, currInf.modifiers);
+					currScore += InfluenceUtils.getMultiplier(currInfNode, currInf, $entity);
 				}
 
 				if (!highScore || currScore > highScore)
@@ -125,9 +113,8 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 					$entity.AIComp.destination = currNeigh.cell;
 				}
 			}
-			//console.log(highScore);
 			
-			window.debug.sumInfluences(influencesArray, multiply);
+			//window.debug.sumInfluences(influencesArray, InfluenceUtils.getMultiplier, $entity);
 			//window.debug.memory = AIComp.getMemory();
 
 
@@ -139,11 +126,6 @@ define(['dngn/Influences', 'dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/Ab
 				currMemory = memory[i];
 				currMemory.age += 1;
 			}
-
-			//$entity.AIComp.destination = map.getCell(highest.key);
-			// console.log($entity.AIComp.destination);
-			//AIComp.memory = newData;
-			$entity.AIComp.setState({ name: 'nothing' });
 		}
 	};
 });
