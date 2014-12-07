@@ -2,6 +2,14 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 	function (CoordinatedData, MathUtils) {
 	'use strict';
 
+	/***********************************
+		
+		Gere pour l'instant tres mal les répulsions
+		qui font completement cafouiller le systeme de navigation
+		une solution peut etre serait de traiter les pieges etc comme des obstacles infranchissables au préalable ?
+		a voir....
+		
+	*************************************/
 	var InfluenceMap = function ($array, $goals, $properties)
 	{
 		switch ($properties.type)

@@ -12,35 +12,36 @@ define([],
 			$string = $string.replace(lineBreak, '');
 			parsed.height = $string.length / parsed.width;
 			parsed.mapArray = [];
-			parsed.actorsArray = [];
+			parsed.entitiesArray = [];
 
 			for (var i = 0, length = $string.length; i < length; i += 1)
 			{
 				var currChar = $string[i];
 				var xPos = i % parsed.width;
 				var yPos = Math.floor(i / parsed.width);
-				var actor = {};
-				actor.position = { x: xPos, y: yPos };
+				var entity = {};
+				entity.position = { x: xPos, y: yPos };
 
 				if (currChar === 'P' || currChar === 'E')
 				{
-					actor.type = currChar === 'P' ? 'player' : 'enemy';
-					actor.bodyType = 'unit';
-					parsed.actorsArray.push(actor);
+					entity.team = currChar === 'P' ? 'player' : 'enemy';
+					entity.type = 'monster';
+					parsed.entitiesArray.push(entity);
 					currChar = 0;
 				}
 				else if (currChar === '∏')
 				{
 					currChar = 0;
-					actor.type = 'door';
-					actor.bodyType = 'door';
-					parsed.actorsArray.push(actor);
+					entity.type = 'door';
+					entity.team = 'player';
+					parsed.entitiesArray.push(entity);
 				}
 				else if (currChar === '∆')
 				{
 					currChar = 0;
-					actor.type = 'server';
-					parsed.actorsArray.push(actor);
+					entity.type = 'server';
+					entity.team = 'player';
+					parsed.entitiesArray.push(entity);
 				}
 				
 				currChar = currChar === ' ' ? 0 : currChar;

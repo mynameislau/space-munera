@@ -38,7 +38,22 @@ require(['jquery',
 				
 				var dungeon = Object.create(Dungeon);
 				dungeon.init(loader.getContent('map'), loader.getContent('names'));
+
+				$('#js-minion').click(function ()
+				{
+					dungeon.createEntity({ type: 'monster', team: 'player' });
+				});
 				
+				var canvas = $('#canvas');
+				$('#canvas').click(function (e)
+				{
+					console.log(canvas.offset().left, canvas.width());
+					var mouseX = e.clientX - canvas.offset().left;
+					var mouseY = e.clientY - canvas.offset().top;
+					var cellSize = dungeon.display.cellSize;
+					console.log(Math.floor(mouseX / cellSize));
+					dungeon.createEntity({ type: 'door', team: 'player', position: { x: Math.floor(mouseX / cellSize), y: Math.floor(mouseY / cellSize) } });
+				});
 
 				//MUTANT
 				/*var tagsBank = new TagsBank(loader.getContent('tags'));
@@ -68,7 +83,7 @@ require(['jquery',
 			loader.appendJSONLoader({ name : 'interpolations', URL : 'data/interpolations.json' });
 			loader.appendJSONLoader({ name : 'creatures', URL : 'data/creatures.json' });
 			loader.appendStringLoader({ name : 'map', URL : 'data/map3.dmap' });
-			loader.appendStringLoader({ name : 'names', URL : 'data/pokenomfrench.txt' });
+			loader.appendStringLoader({ name : 'names', URL : 'data/insultes.txt' });
 			loader.load();
 		});
 	});

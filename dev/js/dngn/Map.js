@@ -8,8 +8,8 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		{
 			this.dispatcher = Object.create(Dispatcher);
 
-			this._width = 50;
-			this._height = 50;
+			this.width = 50;
+			this.height = 50;
 			this._cells = new CoordinatedData();
 
 			this._invalidCells = [];
@@ -28,8 +28,8 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			};
 			if ($parsed)
 			{
-				this._width = $parsed.width;
-				this._height = $parsed.height;
+				this.width = $parsed.width;
+				this.height = $parsed.height;
 
 				for (var i = 0, mapLength = $parsed.mapArray.length; i < mapLength; i += 1)
 				{
@@ -43,7 +43,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				/*ROT.RNG.setSeed(12345);
 				ROT.DEFAULT_WIDTH = 80;
 				ROT.DEFAULT_HEIGHT = 30;*/
-				var digger = new ROT.Map.Digger(this._width, this._height);
+				var digger = new ROT.Map.Digger(this.width, this.height);
 				digger.create(initCell.bind(this));
 			}
 
@@ -71,6 +71,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		},
 		placeActor: function ($actor, $position)
 		{
+			console.log('place-actor', $position);
 			var cell;
 			if ($position)
 			{
@@ -79,7 +80,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			else
 			{
 				//cell = this.getFreeCells().randomize()[0];
-				cell = this.getStartingPosition();
+				cell = this.getStartingPosition($actor.ordersComp.team);
 			}
 			
 			this.addActorToCell(cell, $actor);
@@ -89,12 +90,13 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			$cell.setTerrain($terrain);
 			this.invalidate($cell.key);
 		},
-		getStartingPosition: function ()
+		getStartingPosition: function ($team)
 		{
 			for (var i = 0, length = this._cells.array.length; i < length; i += 1)
 			{
 				var currCell = this._cells.array[i];
-				if (currCell.getTerrain() === 'S') { return currCell; }
+				if (currCell.getTerrain() === 'S' && $team === 'player') { return currCell; }
+				else if (currCell.getTerrain() === '±' && $team	 === 'enemy') { return currCell; }
 			}
 		},
 		addActorToCell: function ($cell, $actor)

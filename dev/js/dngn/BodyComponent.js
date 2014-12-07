@@ -8,7 +8,7 @@ define([],
 			this.bodyType = $data.bodyType;
 
 			this.sight = 10;
-			this.strength = 1 + Math.random() * 1;
+			this.strength = this.bodyType === 'door' ? 10 : 1 + Math.random() * 1;
 			
 			var vital = {
 				init: function ($name)

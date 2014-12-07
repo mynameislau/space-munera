@@ -8,62 +8,95 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Entity', 'dngn/SystemsR
 			this._map = Object.create(Map);
 			this._map.init();
 
-			this._actors = [];
+			this._entities = [];
 
 			this._engine = Object.create(Engine);
 			this._engine.init();
 
-			this._display = Object.create(Display);
-			this._display.init(this._map);
+			this.alertLevel = 0;
+
+			this.display = Object.create(Display);
 			var parsedMapData = MapParser.parse($mapString);
 			this._map.generate(parsedMapData);
+			this.display.init(this._map);
 
 			this._nameGenerator = Object.create(NameGenerator).init($names);
 
-			this.createActors(parsedMapData.actorsArray);
+			this.createEntities(parsedMapData.entitiesArray);
 
 			Object.create(Debug).init();
 
+			var render = function ()
+			{
+				this.display.draw(this._map, this._entities);
+				window.requestAnimationFrame(render);
+			}.bind(this);
+			render();
 
 			this._engine.start();
 		},
-		createActors: function ($actorDataArray)
+		createEntities: function ($entityDataArray)
 		{
-			if ($actorDataArray.length === 0)
+			for (var i = 0, length = $entityDataArray.length; i < length; i += 1)
 			{
-				this.createActor().prenom = 'toto';
-				//this.createActor().prenom = 'victor';
+				var currEntityData = $entityDataArray[i];
+				this.createEntity(currEntityData);
 			}
-			else
+		},
+		createEntity: function ($entityData)
+		{
+			if (this.alertLevel > 15 && $entityData.team === 'player') { return; }
+			console.log('create');
+			var entity = Entity.initEntity($entityData, this._map);
+			entity.prenom = this._nameGenerator.generate();
+			this._map.placeActor(entity, $entityData.position);
+			this._entities.push(entity);
+			entity.dispatcher.on('update', this.runSystems.bind(this));
+			entity.dispatcher.on('deletion', this.removeEntity.bind(this));
+			this._engine.add(entity);
+
+			console.log(this.alertLevel);
+
+			if ($entityData.team === 'player')
 			{
-				for (var i = 0, length = $actorDataArray.length; i < length; i += 1)
+				this.alertLevel += 1;
+				if (this.alertLevel === 15)
 				{
-					var currActorData = $actorDataArray[i];
-					this.createActor(currActorData);
+					this.createEntities([
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' },
+						{ type: 'monster', team: 'enemy' }
+					]);
 				}
 			}
+			return entity;
 		},
-		createActor: function ($actorData)
+		removeEntity: function ($entity)
 		{
-			var actor = Entity.initEntity($actorData, this._map);
-			actor.prenom = this._nameGenerator.generate();
-			this._map.placeActor(actor, $actorData.position);
-			this._actors.push(actor);
-			actor.dispatcher.on('update', this.runSystems.bind(this));
-			actor.dispatcher.on('deletion', this.removeActor.bind(this));
-			this._engine.add(actor);
-			return actor;
-		},
-		removeActor: function ($actor)
-		{
-			this._engine.remove($actor);
-			this._actors.splice(this._actors.indexOf($actor), 1);
-			this._map.removeActorFromCell($actor);
+			this._engine.remove($entity);
+			this._entities.splice(this._entities.indexOf($entity), 1);
+			this._map.removeActorFromCell($entity);
 		},
 		runSystems: function ($entity)
 		{
 			SystemsRunner.run($entity, $entity.type);
-			this._display.draw(this._map, this._actors);
 		}
 	};
 });

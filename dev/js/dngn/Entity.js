@@ -28,22 +28,22 @@ define(['event/Dispatcher', 'dngn/AIComponent', 'dngn/BodyComponent'],
 		{
 			var entity = Object.create(Entity).init();
 
-			if ($data.type === 'player' || $data.type === 'enemy')
+			if ($data.type === 'monster')
 			{
 				entity.type = 'actor';
 				entity.AIComp = Object.create(AIComponent).init();
 				entity.mapComp = $map;
 				entity.posComp = { cell: undefined };
 				entity.fightingComp = { target: undefined };
-				entity.bodyComp = Object.create(BodyComponent).init($data);
-				entity.ordersComp = { team: $data.type, attacking: $data.type === 'player' ? 0.5 : 1, defending: $data.type === 'enemy' ? 0 : 0.5 };
+				entity.bodyComp = Object.create(BodyComponent).init({ bodyType: 'unit' });
+				entity.ordersComp = { team: $data.team, attacking: $data.team === 'player' ? 0.5 : 1, defending: $data.team === 'enemy' ? 0 : 0.5 };
 			}
 			else if ($data.type === 'door' || $data.type === 'server')
 			{
 				entity.type = 'static-passive';
-				entity.bodyComp = Object.create(BodyComponent).init($data);
+				entity.bodyComp = Object.create(BodyComponent).init({ bodyType: 'door' });
 				entity.posComp = { cell: undefined };
-				entity.ordersComp = { team: 'player' };
+				entity.ordersComp = { team: $data.team };
 			}
 			return entity;
 		}
