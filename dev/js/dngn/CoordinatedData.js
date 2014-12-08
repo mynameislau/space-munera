@@ -24,8 +24,8 @@ define(['dngn/Graph'],
 	{
 		this.obj[$x + ',' + $y] = $item;
 		this.array.push($item);
-		this.graph[$x] = this.graph[$x] || [];
-		this.graph[$x][$y] = $item;
+		this.graph[$y] = this.graph[$y] || [];
+		this.graph[$y][$x] = $item;
 	};
 
 	return CoordinatedData;

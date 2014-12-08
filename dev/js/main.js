@@ -26,8 +26,9 @@ require(['jquery',
 	'dna/TagsBank',
 	'dna/GeneInterpolationBank',
 	'dna/Mutator',
-	'dna/GeneSet'],
-	function (jquery, LiteLoader, Dungeon, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet)
+	'dna/GeneSet',
+	'dngn/Graph'],
+	function (jquery, LiteLoader, Dungeon, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet, Graph)
 	{
 		$(document).ready(function ()
 		{
