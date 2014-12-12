@@ -2,14 +2,6 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 	function (CoordinatedData, MathUtils) {
 	'use strict';
 
-	/***********************************
-		
-		Gere pour l'instant tres mal les répulsions
-		qui font completement cafouiller le systeme de navigation
-		une solution peut etre serait de traiter les pieges etc comme des obstacles infranchissables au préalable ?
-		a voir....
-		
-	*************************************/
 	var InfluenceMap = function ($array, $goals, $properties)
 	{
 		switch ($properties.type)
@@ -39,14 +31,21 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 	};
 	InfluenceMap.prototype.generateFleeingMap = function ($array, $goals)
 	{
-		var dijkstraFirst = this.generateDijkstra($array, $goals);
-		for (var i = 0, length = dijkstraFirst.array.length; i < length; i += 1)
+		var coordData = new CoordinatedData();
+		for (var i = 0, length = $array.length; i < length; i += 1)
 		{
-			var curr = dijkstraFirst.array[i];
-			curr.value *= - 1.2;
+			var currCell = $array[i];
+			coordData.addNode({ x: currCell.x, y: currCell.y, cell: currCell, value: currCell === $goals[0] ? 0 : 1 }, currCell.x, currCell.y);
 		}
-		this.dijsktraScan(dijkstraFirst);
-		this._coordinatedData = dijkstraFirst;
+		var zone = coordData.getNeighboursInRadius($goals[0].x, $goals[0].y, 2);
+		i = 0;
+		length = zone.length;
+		for (i; i < length; i += 1)
+		{
+			var currNode = zone[i];
+			currNode.value = 0;
+		}
+		this._coordinatedData = coordData;
 	};
 	InfluenceMap.prototype.generateExponential = function ($array, $goals, $type)
 	{

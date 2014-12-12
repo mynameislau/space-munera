@@ -9,9 +9,16 @@ define(['dngn/CoordinatedData'],
 			window.debug = this;
 			return this;
 		},
+		setCoordData: function ($coordData, $evaluationType, $evalFunction)
+		{
+			console.log($coordData);
+			this.coordData = $coordData;
+			this.evaluationType = $evaluationType;
+			this.coordDataEvalFunction = $evalFunction;
+		},
 		sumInfluences: function ($influencesArray, $addingFunction, $entity)
 		{
-			this.influence = new CoordinatedData();
+			this.coordData = new CoordinatedData();
 
 			var i = 0;
 			var length = $influencesArray.length;
@@ -21,11 +28,11 @@ define(['dngn/CoordinatedData'],
 				for (var k = 0, valuesLength = currInf.array.length; k < valuesLength; k += 1)
 				{
 					var currNode = currInf.array[k];
-					var sumNode = this.influence.getNodeFromCoords(currNode.x, currNode.y);
-					var multiplied = $addingFunction(currNode, currInf, $entity);
+					var sumNode = this.coordData.getNodeFromCoords(currNode.x, currNode.y);
+					var multiplied = $addingFunction(currInf, currNode.x, currNode.y, $entity);
 					if (!sumNode)
 					{
-						this.influence.addNode({value: multiplied, x: currNode.x, y: currNode.y}, currNode.x, currNode.y);
+						this.coordData.addNode({value: multiplied, x: currNode.x, y: currNode.y}, currNode.x, currNode.y);
 					}
 					else
 					{
@@ -33,6 +40,7 @@ define(['dngn/CoordinatedData'],
 					}
 				}
 			}
+			this.evaluationType = 'influencesSum';
 		}
 	};
 

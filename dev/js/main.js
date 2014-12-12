@@ -26,9 +26,8 @@ require(['jquery',
 	'dna/TagsBank',
 	'dna/GeneInterpolationBank',
 	'dna/Mutator',
-	'dna/GeneSet',
-	'dngn/Graph'],
-	function (jquery, LiteLoader, Dungeon, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet, Graph)
+	'dna/GeneSet'],
+	function (jquery, LiteLoader, Dungeon, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet)
 	{
 		$(document).ready(function ()
 		{
@@ -44,16 +43,16 @@ require(['jquery',
 				{
 					dungeon.createEntity({ type: 'monster', team: 'player' });
 				});
+				dungeon.createEntity({ type: 'monster', team: 'player' });
 				
 				var canvas = $('#canvas');
 				$('#canvas').click(function (e)
 				{
-					console.log(canvas.offset().left, canvas.width());
 					var mouseX = e.clientX - canvas.offset().left;
 					var mouseY = e.clientY - canvas.offset().top;
 					var cellSize = dungeon.display.cellSize;
-					console.log(Math.floor(mouseX / cellSize));
-					dungeon.createEntity({ type: 'door', team: 'player', position: { x: Math.floor(mouseX / cellSize), y: Math.floor(mouseY / cellSize) } });
+					console.log(Math.floor(mouseX / cellSize), Math.floor(mouseY / cellSize));
+					dungeon.createEntity({ type: 'monster', team: 'player', position: { x: Math.floor(mouseX / cellSize), y: Math.floor(mouseY / cellSize) } });
 				});
 
 				//MUTANT

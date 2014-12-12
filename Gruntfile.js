@@ -103,7 +103,7 @@ module.exports = function( grunt )
 					eqnull: true,
 					browser: true,
 					esnext: true,
-					globals: {console:false, define:false, require:false, requirejs:false, $:false, Promise: false},
+					globals: {performance:false, console:false, define:false, require:false, requirejs:false, $:false, Promise: false},
 					quotmark: true,
 					smarttabs: true,
 					trailing: true,

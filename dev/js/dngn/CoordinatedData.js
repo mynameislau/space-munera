@@ -5,16 +5,15 @@ define(['dngn/Graph'],
 	var CoordinatedData = function ()
 	{
 		this.array = [];
-		this.obj = {};
 		this.graph = new Graph();
-	};
-	CoordinatedData.prototype.getNodeFromKey = function ($key)
-	{
-		return this.obj[$key];
 	};
 	CoordinatedData.prototype.getNodeFromCoords = function ($x, $y)
 	{
 		return this.graph.getNode($x, $y);
+	};
+	CoordinatedData.prototype.getNeighboursInRadius = function ($x, $y, $radius)
+	{
+		return this.graph.getNeighboursInRadius($x, $y, $radius);
 	};
 	CoordinatedData.prototype.getNeighbours = function ($x, $y)
 	{
@@ -22,10 +21,54 @@ define(['dngn/Graph'],
 	};
 	CoordinatedData.prototype.addNode = function ($item, $x, $y)
 	{
-		this.obj[$x + ',' + $y] = $item;
 		this.array.push($item);
 		this.graph[$y] = this.graph[$y] || [];
 		this.graph[$y][$x] = $item;
+	};
+	//rajoute plein de proprietés sur des objets qui ont rien demandé....
+	CoordinatedData.prototype.breadthFirstMapping = function ($startX, $startY, $maxDist)
+	{
+		var openList = [];
+		var startNode = this.getNodeFromCoords($startX, $startY);
+		var neighbours;
+		var neighbour;
+		var node;
+		var i;
+		var l;
+
+		// push the start pos into the queue
+		openList.push(startNode);
+		startNode.opened = true;
+		startNode.value = 0;
+
+		// while the queue is not empty
+		while (openList.length) {
+			// take the front node from the queue
+			node = openList.shift();
+			node.closed = true;
+
+			if ($maxDist && node.value >= $maxDist)
+			{
+				break;
+			}
+
+			neighbours = this.getNeighbours(node.x, node.y);
+
+			for (i = 0, l = neighbours.length; i < l; i += 1) {
+				neighbour = neighbours[i];
+
+				// skip this neighbour if it has been inspected before
+				if (neighbour.closed || neighbour.opened) {
+					continue;
+				}
+
+				openList.push(neighbour);
+				neighbour.opened = true;
+				neighbour.parent = node;
+				
+				neighbour.value = node.value + 1;
+			}
+		}
 	};
 
 	return CoordinatedData;

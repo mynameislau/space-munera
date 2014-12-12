@@ -35,7 +35,8 @@ define([],
 			this.food = Object.create(vital).init('food');
 			this.water = Object.create(vital).init('water');
 			this.health = Object.create(vital).init('health');
-			return this;
+			
+			return Object.freeze(this);
 		}
 	};
 });

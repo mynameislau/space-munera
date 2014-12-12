@@ -23,9 +23,8 @@ define([],
 			var yTab = this[i];
 			if (!yTab) { continue; }
 			var calc = ($radius - Math.abs($y - i));
-			console.log(calc);
-			var k = $y - calc;
-			var length = $y + calc + 1;
+			var k = $x - calc;
+			var length = $x + calc + 1;
 			for (k; k < length; k += 1)
 			{
 				var value = yTab[k];
@@ -46,7 +45,7 @@ define([],
 		if (this[$y + 0] && this[$y + 0][$x + 1]) { toReturn.push(this[$y + 0][$x + 1]); }
 		//if (this[$y - 1] && this[$y - 1][$x + 1]) { toReturn.push(this[$y - 1][$x + 1]); }
 		if (this[$y - 1] && this[$y - 1][$x + 0]) { toReturn.push(this[$y - 1][$x + 0]); }
-		return toReturn;
+		return toReturn.randomize();
 	};
 
 	return Graph;

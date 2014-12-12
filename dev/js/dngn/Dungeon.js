@@ -1,12 +1,15 @@
-define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Entity', 'dngn/SystemsRunner', 'dngn/MapParser', 'dngn/Debug', 'dngn/NameGenerator'],
-	function (Map, Display, Engine, Entity, SystemsRunner, MapParser, Debug, NameGenerator) {
+define(['dngn/InfluencesManager', 'dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Entity', 'dngn/SystemsRunner', 'dngn/MapParser', 'dngn/Debug', 'dngn/NameGenerator'],
+	function (InfluencesManager, Map, Display, Engine, Entity, SystemsRunner, MapParser, Debug, NameGenerator) {
 	'use strict';
 
 	return {
 		init: function ($mapString, $names)
 		{
-			this._map = Object.create(Map);
-			this._map.init();
+			Object.create(Debug).init();
+
+			this.managers = {};
+
+			this.managers.map = Object.create(Map).init();
 
 			this._entities = [];
 
@@ -15,23 +18,26 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Entity', 'dngn/SystemsR
 
 			this.alertLevel = 0;
 
-			this.display = Object.create(Display);
+			this.managers.display = Object.create(Display);
+
 			var parsedMapData = MapParser.parse($mapString);
-			this._map.generate(parsedMapData);
-			this.display.init(this._map);
+			this.managers.map.generate(parsedMapData);
+			this.managers.display.init(this.managers.map);
+			this.managers.influencesManager = Object.create(InfluencesManager).init(this.managers.map);
 
 			this._nameGenerator = Object.create(NameGenerator).init($names);
 
 			this.createEntities(parsedMapData.entitiesArray);
 
-			Object.create(Debug).init();
 
 			var render = function ()
 			{
-				this.display.draw(this._map, this._entities);
+				this.managers.display.draw(this.managers.map, this._entities);
 				window.requestAnimationFrame(render);
 			}.bind(this);
 			render();
+
+			this.systemsRunner = Object.create(SystemsRunner).init(this._entities, this.managers);
 
 			this._engine.start();
 		},
@@ -46,16 +52,13 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Entity', 'dngn/SystemsR
 		createEntity: function ($entityData)
 		{
 			if (this.alertLevel > 15 && $entityData.team === 'player') { return; }
-			console.log('create');
-			var entity = Entity.initEntity($entityData, this._map);
+			var entity = Entity.initEntity($entityData, this.managers.map);
 			entity.prenom = this._nameGenerator.generate();
-			this._map.placeActor(entity, $entityData.position);
+			this.managers.map.placeActor(entity, $entityData.position);
 			this._entities.push(entity);
 			entity.dispatcher.on('update', this.runSystems.bind(this));
 			entity.dispatcher.on('deletion', this.removeEntity.bind(this));
 			this._engine.add(entity);
-
-			console.log(this.alertLevel);
 
 			if ($entityData.team === 'player')
 			{
@@ -92,11 +95,11 @@ define(['dngn/Map', 'dngn/Display', 'dngn/Engine', 'dngn/Entity', 'dngn/SystemsR
 		{
 			this._engine.remove($entity);
 			this._entities.splice(this._entities.indexOf($entity), 1);
-			this._map.removeActorFromCell($entity);
+			this.managers.map.removeActorFromCell($entity);
 		},
 		runSystems: function ($entity)
 		{
-			SystemsRunner.run($entity, $entity.type);
+			this.systemsRunner.run($entity, $entity.type);
 		}
 	};
 });

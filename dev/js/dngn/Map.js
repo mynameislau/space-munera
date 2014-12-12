@@ -1,5 +1,5 @@
-define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedData'],
-	function (ROT, Cell, Dispatcher, Graph, CoordinatedData) {
+define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedData', 'libs/Astar'],
+	function (ROT, Cell, Dispatcher, Graph, CoordinatedData, Astar) {
 	'use strict';
 
 	var Map = {
@@ -16,6 +16,8 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			//this.actorCells = [];
 
 			this.invalidate();
+
+			return this;
 		},
 		generate: function ($parsed)
 		{
@@ -24,7 +26,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				var currCell = Object.create(Cell);
 				currCell.init($x, $y, $terrain);
 				this._cells.addNode(currCell, $x, $y);
-				this.invalidate(currCell.key);
+				this.invalidate(currCell);
 			};
 			if ($parsed)
 			{
@@ -47,6 +49,58 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				digger.create(initCell.bind(this));
 			}
 
+			var date = Date.now();
+			(function () {
+				var coordTestData = new CoordinatedData();
+				var i = 0;
+				var length = this.getCellsArray().length;
+				for (i; i < length; i += 1)
+				{
+					var currCell = this.getCellsArray()[i];
+					if (currCell.getTerrain() === 1) { continue; }
+					coordTestData.addNode({value: Infinity, x: currCell.x, y: currCell.y}, currCell.x, currCell.y);
+				}
+				console.log(coordTestData.breadthFirstMapping(5, 5));
+				window.debug.setCoordData(coordTestData, 'values');
+
+			}.bind(this))();
+			console.log(Date.now() - date);
+
+			/*(function () {
+				var coordTestData = new CoordinatedData();
+				var i = 0;
+				var length = this.getCellsArray().length;
+				for (i; i < length; i += 1)
+				{
+					var currCell = this.getCellsArray()[i];
+					coordTestData.addNode({weight: 1, x: currCell.x, y: currCell.y}, currCell.x, currCell.y);
+				}
+				var neighbours = coordTestData.getNeighboursInRadius(10, 0, 5);
+				console.log(neighbours.length);
+
+				i = 0;
+				length = neighbours.length;
+				for (i; i < length; i += 1)
+				{
+					var currNeigh = neighbours[i];
+					currNeigh.weight = 1;
+				}
+				console.log(Astar);
+				Astar.init(coordTestData.array);
+				var start = coordTestData.getNodeFromCoords(0, 19);
+				var end = coordTestData.getNodeFromCoords(19, 0);
+				console.log(start, end);
+				var path = Astar.search(coordTestData.graph, start, end);
+
+				i = 0;
+				length = path.length;
+				for (i; i < length; i += 1)
+				{
+					var pathNode = path[i];
+					pathNode.value = 100;
+				}
+				window.debug.coordData = coordTestData;
+			}.bind(this))();*/
 			//this.setBonuses();
 		},
 		setBonuses: function ()
@@ -62,16 +116,15 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				this.changeTerrain(this.getFreeCells().randomize()[0], bonus);
 			}
 		},
-		invalidate: function ($key)
+		invalidate: function ($cell)
 		{
 			this._freeCells = undefined;
-			if ($key !== undefined) { this.dispatcher.fire('cellChange', $key); }
+			if ($cell !== undefined) { this.dispatcher.fire('cellChange', $cell); }
 			//this.actorCells = undefined;
 			//this.actors = undefined;
 		},
 		placeActor: function ($actor, $position)
 		{
-			console.log('place-actor', $position);
 			var cell;
 			if ($position)
 			{
@@ -88,7 +141,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 		changeTerrain: function ($cell, $terrain)
 		{
 			$cell.setTerrain($terrain);
-			this.invalidate($cell.key);
+			this.invalidate($cell);
 		},
 		getStartingPosition: function ($team)
 		{
@@ -104,7 +157,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			this.removeActorFromCell($actor);
 			$cell.addActor($actor);
 			$actor.posComp.cell = $cell;
-			this.invalidate($cell.key);
+			this.invalidate($cell);
 		},
 		removeActorFromCell: function ($actor)
 		{
@@ -112,7 +165,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			if (!cell) { return; }
 			cell.removeActor($actor);
 			$actor.posComp.cell = undefined;
-			this.invalidate(cell.key);
+			this.invalidate(cell);
 		},
 
 		getCellFromActor: function ($actor)
@@ -124,8 +177,6 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				if (index !== -1) { return currCell; }
 			}
 		},
-
-		getCell: function ($key) { return this._cells.obj[$key]; },
 		
 		getCellFromCoords: function ($x, $y) { return this._cells.getNodeFromCoords($x, $y); },
 		
