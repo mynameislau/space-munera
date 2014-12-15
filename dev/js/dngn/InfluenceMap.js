@@ -2,76 +2,83 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 	function (CoordinatedData, MathUtils) {
 	'use strict';
 
-	var InfluenceMap = function ($array, $goals, $properties)
+	var InfluenceMap = function ($properties)
 	{
-		switch ($properties.type)
+		this.mapData = new CoordinatedData();
+
+		/*switch ($properties.type)
 		{
 			case 'fleeing':
-				this.generateFleeingMap($array, $goals);
+				this.mapData = this.generateFleeingMap($array, $goals);
 				break;
 			case 'plain':
-				this.generatePlain($array, $goals);
+				this.mapData = this.generatePlain($array, $goals);
 				break;
 			case 'zone':
-				this.generateZone($array, $goals, $properties.radius);
+				this.mapData = this.generateZone($array, $goals, $properties.radius);
 				break;
-			default:
-				this.generateExponential($array, $goals, $properties.type);
-				break;
-		}
+		}*/
 
 		this.properties = $properties;
-
-		this.array = this._coordinatedData.array;
-		this.graph = this._coordinatedData.graph;
-		this.obj = this._coordinatedData.obj;
-		this.getNodeFromCoords = this._coordinatedData.getNodeFromCoords;
-		this.getNeighbours = this._coordinatedData.getNeighbours;
-		this.addNode = this._coordinatedData.addNode;
 	};
-	InfluenceMap.prototype.generateFleeingMap = function ($array, $goals)
+	InfluenceMap.generateFleeingMap = function ($goals, $array)
 	{
 		var coordData = new CoordinatedData();
-		for (var i = 0, length = $array.length; i < length; i += 1)
+		var length = $array.length;
+		for (var i = 0; i < length; i += 1)
 		{
 			var currCell = $array[i];
-			coordData.addNode({ x: currCell.x, y: currCell.y, cell: currCell, value: currCell === $goals[0] ? 0 : 1 }, currCell.x, currCell.y);
+			coordData.addNode({ x: currCell.x, y: currCell.y, value: Infinity }, currCell.x, currCell.y);
 		}
-		var zone = coordData.getNeighboursInRadius($goals[0].x, $goals[0].y, 2);
+		coordData.breadthFirstMapping($goals, 3);
 		i = 0;
-		length = zone.length;
+		length = coordData.array.length;
 		for (i; i < length; i += 1)
 		{
-			var currNode = zone[i];
-			currNode.value = 0;
+			var currNode = coordData.array[i];
+			currNode.value = currNode.value === Infinity ? 1 : 0;
 		}
-		this._coordinatedData = coordData;
+		return coordData;
 	};
-	InfluenceMap.prototype.generateExponential = function ($array, $goals, $type)
+	InfluenceMap.generateExponential = function ($array, $goals, $type)
 	{
-		this._coordinatedData = this.generateDijkstra($array, $goals);
-		for (var i = 0, length = this._coordinatedData.array.length; i < length; i += 1)
+		var coordData = InfluenceMap.generateDijkstra($array, $goals);
+		for (var i = 0, length = coordData.array.length; i < length; i += 1)
 		{
-			var currData = this._coordinatedData.array[i];
+			var currData = coordData.array[i];
 			var distance = currData.value;
 			if (!$type || $type === 'exponential') { currData.value = 1 / (distance + 1); }
 			else if ($type === 'soft') { currData.value = 1 / (1 + distance * 0.4); }
 		}
+		return coordData;
 	};
-	InfluenceMap.prototype.generatePlain = function ($array, $goals)
+	InfluenceMap.generatePlain = function ($array, $goals)
 	{
-		this._coordinatedData = this.generateDijkstra($array, $goals);
+		return InfluenceMap.generateDijkstra($array, $goals);
 	};
-	InfluenceMap.prototype.generateZone = function ($array, $goals, $radius)
+	InfluenceMap.generateZone = function ($array, $goals, $radius)
 	{
-		this._coordinatedData = this.generateDijkstra($array, $goals);
-		for (var i = 0, length = this._coordinatedData.array.length; i < length; i += 1)
+		var coordData = InfluenceMap.generateDijkstra($array, $goals);
+		for (var i = 0, length = coordData.array.length; i < length; i += 1)
 		{
-			var currData = this._coordinatedData.array[i];
+			var currData = coordData.array[i];
 			currData.value = 1 / Math.pow(currData.value + 1, 5);
 		}
+		return coordData;
 	};
-	InfluenceMap.prototype.generateDijkstra = function ($array, $goals)
+	InfluenceMap.generateBreadthFirst = function ($goals, $array)
+	{
+		var coordData = new CoordinatedData();
+		var length = $array.length;
+		for (var k = 0; k < length; k += 1)
+		{
+			var currCell = $array[k];
+			coordData.addNode({ x: currCell.x, y: currCell.y, value: Infinity }, currCell.x, currCell.y);
+		}
+		coordData.breadthFirstMapping($goals);
+		return coordData;
+	};
+	InfluenceMap.generateDijkstra = function ($array, $goals)
 	{
 		var coordData = new CoordinatedData();
 
@@ -86,14 +93,14 @@ define(['dngn/CoordinatedData', 'dngn/MathUtils'],
 		for (i; i < length; i += 1)
 		{
 			var currGoal = $goals[i];
-			if (!coordData.getNodeFromCoords(currGoal.x, currGoal.y)) { coordData.addNode({ cell: currGoal, x: currGoal.x, y: currGoal.y, value: 0 }, currGoal.x, currGoal.y); }
+			if (!coordData.getNodeAt(currGoal.x, currGoal.y)) { coordData.addNode({ cell: currGoal, x: currGoal.x, y: currGoal.y, value: 0 }, currGoal.x, currGoal.y); }
 		}
 
-		this.dijsktraScan(coordData);
+		InfluenceMap.dijsktraScan(coordData);
 		
 		return coordData;
 	};
-	InfluenceMap.prototype.dijsktraScan = function ($dijkstraCoordData)
+	InfluenceMap.dijsktraScan = function ($dijkstraCoordData)
 	{
 		var dijArray = $dijkstraCoordData.array;
 		var dijGraph = $dijkstraCoordData.graph;

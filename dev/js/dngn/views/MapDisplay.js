@@ -1,26 +1,29 @@
-define(['ROT', 'dngn/CoordinatedData'],
-	function (ROT, CoordinatedData) {
+define(['jquery', 'ROT', 'dngn/CoordinatedData', 'event/Dispatcher'],
+	function (jquery, ROT, CoordinatedData, Dispatcher) {
 	'use strict';
 
-	var Display = {
+	return {
 
-		init: function ($map, $engine, $entities)
+		init: function ($map, $engine, $entitiesManager)
 		{
 			this.cellSize = 30;
+			this.dispatcher = Object.create(Dispatcher);
 
 			$engine.dispatcher.on('loop', this.draw.bind(this));
 			//this.display.draw(this.managers.map, this._entities);
 
 			this._map = $map;
-			this._entities = $entities;
+			this._entitiesManager = $entitiesManager;
 
 			this._map.dispatcher.on('cellChange', this.invalidateCell.bind(this));
 			//this._ROTDisplay = new ROT.Display();
-			var canvas = document.getElementById('canvas');
-			this.cellSize = Math.floor(Math.min(canvas.width / this._map.width, canvas.height / this._map.height));
-			this._context = canvas.getContext('2d');
+			this._canvas = $('#canvas');
+			this.cellSize = Math.floor(Math.min(this._canvas.width() / this._map.width, this._canvas.height() / this._map.height));
+			this._canvas.on('click', this.canvasClickHandler.bind(this));
+
+			this._context = this._canvas[0].getContext('2d');
 			this._context.fillStyle = 'black';
-			this._context.fillRect(0, 0, canvas.width, canvas.height);
+			this._context.fillRect(0, 0, this._canvas.width(), this._canvas.height());
 			this._cellsToDraw = [];
 			this._drawnActorCells = [];
 			this._cellDisplayData = new CoordinatedData();
@@ -216,10 +219,11 @@ define(['ROT', 'dngn/CoordinatedData'],
 			/***************** actors ********/
 
 			i = 0;
-			length = this._entities.getArray().length;
+			var entitiesArray = this._entitiesManager.getArray();
+			length = entitiesArray.length;
 			for (i; i < length; i += 1)
 			{
-				var currPlayer = this._entities.getArray()[i];
+				var currPlayer = entitiesArray[i];
 				var playerPos = currPlayer.posComp.cell;
 				this.drawActor(currPlayer);
 			}
@@ -258,10 +262,16 @@ define(['ROT', 'dngn/CoordinatedData'],
 					this._ROTDisplay.draw(currFarest.x, currFarest.y, 'x', '#fff', '#ff0000');
 				}
 			}*/
+		},
+		canvasClickHandler: function (e)
+		{
+			console.log('click');
+			var mouseX = e.clientX - this._canvas.offset().left;
+			var mouseY = e.clientY - this._canvas.offset().top;
+			var cellSize = this.cellSize;
+			//dungeon.createEntity({ type: 'monster', team: 'player', position: { x: Math.floor(mouseX / cellSize), y: Math.floor(mouseY / cellSize) } });
+			this.dispatcher.fire('click', { x: Math.floor(mouseX / cellSize), y: Math.floor(mouseY / cellSize) });
 		}
 		
 	};
-
-	return Display;
-
 });

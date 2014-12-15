@@ -86,11 +86,12 @@ define(['dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/AbilityUtils', 'dngn/
 				var currCell = AIComp.walkableCellsArray[i];
 				if (isEdge(currCell)) { edges.push(currCell); }
 			}
-			var explorationInfluence = influencesManager.getExplorationInfluence(AIComp.walkableCellsArray, edges);
+			var explorationInfluence = influencesManager.getExplorationInfluence($entity.ID, AIComp.walkableCellsArray, edges);
 
 
 			//concatenating all current influences
 			var influencesArray = [explorationInfluence];
+
 			influencesArray = influencesArray.concat(actorsInfluences).concat(AIComp.cellInfluences);
 
 			/*i = 0;
@@ -150,8 +151,8 @@ define(['dngn/InfluenceMap', 'dngn/CoordinatedData', 'dngn/AbilityUtils', 'dngn/
 
 				var walkableMemory = AIComp.walkableCellsMemory;
 				Astar.init(walkableMemory.array);
-				var start = walkableMemory.getNodeFromCoords(posComp.cell.x, posComp.cell.y);
-				var end = walkableMemory.getNodeFromCoords(AIComp.goal.x, AIComp.goal.y);
+				var start = walkableMemory.getNodeAt(posComp.cell.x, posComp.cell.y);
+				var end = walkableMemory.getNodeAt(AIComp.goal.x, AIComp.goal.y);
 				
 				var path = Astar.search(walkableMemory.graph, start, end, getWeight);
 				posComp.path = path;

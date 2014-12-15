@@ -11,7 +11,6 @@ define(['dngn/CoordinatedData'],
 		},
 		setCoordData: function ($coordData, $evaluationType, $evalFunction)
 		{
-			console.log($coordData);
 			this.coordData = $coordData;
 			this.evaluationType = $evaluationType;
 			this.coordDataEvalFunction = $evalFunction;
@@ -25,10 +24,10 @@ define(['dngn/CoordinatedData'],
 			for (i; i < length; i += 1)
 			{
 				var currInf = $influencesArray[i];
-				for (var k = 0, valuesLength = currInf.array.length; k < valuesLength; k += 1)
+				for (var k = 0, valuesLength = currInf.mapData.array.length; k < valuesLength; k += 1)
 				{
-					var currNode = currInf.array[k];
-					var sumNode = this.coordData.getNodeFromCoords(currNode.x, currNode.y);
+					var currNode = currInf.mapData.array[k];
+					var sumNode = this.coordData.getNodeAt(currNode.x, currNode.y);
 					var multiplied = $addingFunction(currInf, currNode.x, currNode.y, $entity);
 					if (!sumNode)
 					{

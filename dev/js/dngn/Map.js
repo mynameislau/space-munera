@@ -49,7 +49,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				digger.create(initCell.bind(this));
 			}
 
-			var date = Date.now();
+			/*var date = Date.now();
 			(function () {
 				var coordTestData = new CoordinatedData();
 				var i = 0;
@@ -60,11 +60,12 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 					if (currCell.getTerrain() === 1) { continue; }
 					coordTestData.addNode({value: Infinity, x: currCell.x, y: currCell.y}, currCell.x, currCell.y);
 				}
-				console.log(coordTestData.breadthFirstMapping(5, 5));
+				console.log(coordTestData.breadthFirstMapping([{x: 5, y: 5}, {x: 10, y: 10}]));
 				window.debug.setCoordData(coordTestData, 'values');
 
 			}.bind(this))();
 			console.log(Date.now() - date);
+			debugger;*/
 
 			/*(function () {
 				var coordTestData = new CoordinatedData();
@@ -87,8 +88,8 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 				}
 				console.log(Astar);
 				Astar.init(coordTestData.array);
-				var start = coordTestData.getNodeFromCoords(0, 19);
-				var end = coordTestData.getNodeFromCoords(19, 0);
+				var start = coordTestData.getNodeAt(0, 19);
+				var end = coordTestData.getNodeAt(19, 0);
 				console.log(start, end);
 				var path = Astar.search(coordTestData.graph, start, end);
 
@@ -178,7 +179,7 @@ define(['ROT', 'dngn/Cell', 'event/Dispatcher', 'dngn/Graph', 'dngn/CoordinatedD
 			}
 		},
 		
-		getCellFromCoords: function ($x, $y) { return this._cells.getNodeFromCoords($x, $y); },
+		getCellFromCoords: function ($x, $y) { return this._cells.getNodeAt($x, $y); },
 		
 		getCells: function () { return this._cells.obj; },
 

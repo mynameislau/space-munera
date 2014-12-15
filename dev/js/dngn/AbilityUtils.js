@@ -36,7 +36,7 @@ define(['ROT'],
 		{
 			var shadowCastingCallback = function ($xPos, $yPos)
 			{
-				var cell = $cellsData.getNodeFromCoords($xPos, $yPos);
+				var cell = $cellsData.getNodeAt($xPos, $yPos);
 				if (cell) { return AbilityUtils.canSeeThrough(cell, $entity); }
 			};
 			var fov = new ROT.FOV.PreciseShadowcasting(shadowCastingCallback);
@@ -44,7 +44,7 @@ define(['ROT'],
 			var visibilityData = { data: [], cellsArray: [] };
 			fov.compute($fromCell.x, $fromCell.y, $entity.bodyComp.sight, function ($xPos, $yPos, $r, $visibility)
 			{
-				var cell = $cellsData.getNodeFromCoords($xPos, $yPos);
+				var cell = $cellsData.getNodeAt($xPos, $yPos);
 				if (cell)
 				{
 					visibilityData.data.push({ cell: cell, r: $r, visibility: $visibility });

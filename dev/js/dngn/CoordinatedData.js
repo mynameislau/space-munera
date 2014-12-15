@@ -7,7 +7,7 @@ define(['dngn/Graph'],
 		this.array = [];
 		this.graph = new Graph();
 	};
-	CoordinatedData.prototype.getNodeFromCoords = function ($x, $y)
+	CoordinatedData.prototype.getNodeAt = function ($x, $y)
 	{
 		return this.graph.getNode($x, $y);
 	};
@@ -26,20 +26,25 @@ define(['dngn/Graph'],
 		this.graph[$y][$x] = $item;
 	};
 	//rajoute plein de proprietés sur des objets qui ont rien demandé....
-	CoordinatedData.prototype.breadthFirstMapping = function ($startX, $startY, $maxDist)
+	CoordinatedData.prototype.breadthFirstMapping = function ($goals, $maxDist)
 	{
 		var openList = [];
-		var startNode = this.getNodeFromCoords($startX, $startY);
+		var maxDist = $maxDist || Infinity;
 		var neighbours;
 		var neighbour;
 		var node;
 		var i;
 		var l;
 
-		// push the start pos into the queue
-		openList.push(startNode);
-		startNode.opened = true;
-		startNode.value = 0;
+		// push the start positions into the queue
+		for (var k = 0, length = $goals.length; k < length; k += 1)
+		{
+			var currGoal = $goals[k];
+			var startNode = this.getNodeAt(currGoal.x, currGoal.y);
+			openList.push(startNode);
+			startNode.opened = true;
+			startNode.value = 0;
+		}
 
 		// while the queue is not empty
 		while (openList.length) {
@@ -47,7 +52,7 @@ define(['dngn/Graph'],
 			node = openList.shift();
 			node.closed = true;
 
-			if ($maxDist && node.value >= $maxDist)
+			if (node.value >= maxDist)
 			{
 				break;
 			}

@@ -36,13 +36,13 @@ define([],
 					entity.team = 'player';
 					parsed.entitiesArray.push(entity);
 				}
-				else if (currChar === '∆')
+				/*else if (currChar === '∆')
 				{
 					currChar = 0;
 					entity.type = 'server';
 					entity.team = 'player';
 					parsed.entitiesArray.push(entity);
-				}
+				}*/
 				
 				currChar = currChar === ' ' ? 0 : currChar;
 				currChar = currChar === '0' ? 1 : currChar;

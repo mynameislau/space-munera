@@ -1,24 +1,23 @@
-define(['ROT'],
-	function (ROT) {
+define(['event/Dispatcher'],
+	function (Dispatcher) {
 	'use strict';
 
 	var Engine =
 	{
 		init: function () {
-			this._scheduler = new ROT.Scheduler.Simple();
-			this._ROTEngine = new ROT.Engine(this._scheduler);
+			this.dispatcher = Object.create(Dispatcher);
+			return this;
 		},
 		start: function ()
 		{
-			this._ROTEngine.start();
-		},
-		add: function ($actor)
-		{
-			this._scheduler.add($actor, true);
-		},
-		remove: function ($actor)
-		{
-			this._scheduler.remove($actor);
+			this.delta = window.performance.now();
+			var counter = 0;
+			var loop = function ()
+			{
+				this.dispatcher.fire('loop', window.performance.now());
+				window.requestAnimationFrame(loop);
+			}.bind(this);
+			loop();
 		}
 	};
 

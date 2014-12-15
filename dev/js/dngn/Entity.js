@@ -14,7 +14,7 @@ define(['event/Dispatcher', 'dngn/AIComponent', 'dngn/BodyComponent'],
 			{
 				this.dispatcher.fire('update', this);
 				
-				setTimeout(function () { resolve('ok !'); }, this.type === 'actor' ? 1 : 1);
+				setTimeout(function () { resolve('ok !'); }, this.type === 'actor' ? 1000 : 1);
 
 			}.bind(this));
 			promise.then(function ($result) {

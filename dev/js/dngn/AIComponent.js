@@ -38,7 +38,7 @@ define(['event/Dispatcher', 'dngn/CoordinatedData', 'dngn/CellMemory'],
 		},
 		getMemoryItem: function ($x, $y)
 		{
-			return this._memory.getNodeFromCoords($x, $y);
+			return this._memory.getNodeAt($x, $y);
 		},
 		getMemoryArray: function ()
 		{

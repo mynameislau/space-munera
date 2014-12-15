@@ -20,6 +20,7 @@ requirejs.config({
 require(['jquery',
 	'libs/lite_loader',
 	'dngn/Dungeon',
+	'dngn/KeeperOS',
 	'dna/Creature',
 	'dna/Gene',
 	'dna/GeneBank',
@@ -27,7 +28,7 @@ require(['jquery',
 	'dna/GeneInterpolationBank',
 	'dna/Mutator',
 	'dna/GeneSet'],
-	function (jquery, LiteLoader, Dungeon, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet)
+	function (jquery, LiteLoader, Dungeon, KeeperOS, Creature, Gene, GeneBank, TagsBank, GeneInterpolationBank, Mutator, GeneSet)
 	{
 		$(document).ready(function ()
 		{
@@ -38,22 +39,13 @@ require(['jquery',
 				
 				var dungeon = Object.create(Dungeon);
 				dungeon.init(loader.getContent('map'), loader.getContent('names'));
+				var keeperOS = Object.create(KeeperOS).init(dungeon.managers);
 
-				$('#js-minion').click(function ()
+				/*$('#js-minion').click(function ()
 				{
 					dungeon.createEntity({ type: 'monster', team: 'player' });
 				});
-				dungeon.createEntity({ type: 'monster', team: 'player' });
-				
-				var canvas = $('#canvas');
-				$('#canvas').click(function (e)
-				{
-					var mouseX = e.clientX - canvas.offset().left;
-					var mouseY = e.clientY - canvas.offset().top;
-					var cellSize = dungeon.display.cellSize;
-					console.log(Math.floor(mouseX / cellSize), Math.floor(mouseY / cellSize));
-					dungeon.createEntity({ type: 'monster', team: 'player', position: { x: Math.floor(mouseX / cellSize), y: Math.floor(mouseY / cellSize) } });
-				});
+				dungeon.createEntity({ type: 'monster', team: 'player' });*/
 
 				//MUTANT
 				/*var tagsBank = new TagsBank(loader.getContent('tags'));
